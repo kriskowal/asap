@@ -1,4 +1,3 @@
-
 // Use the fastest possible means to execute a task in a future turn
 // of the event loop.
 
@@ -109,5 +108,9 @@ function asap(task) {
     }
 };
 
-module.exports = asap;
+if (typeof exports === "object") {
+    module.exports = asap;
+}
+
+
 
