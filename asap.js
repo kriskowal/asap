@@ -8,8 +8,6 @@ var tail = head;
 var flushing = false;
 var requestFlush = void 0;
 var isNodeJS = false;
-var windowOrWorker = typeof window !== "undefined" && window ||
-                     typeof worker !== "undefined" && worker;
 
 function flush() {
     /* jshint loopfunc: true */
@@ -74,15 +72,9 @@ if (typeof process !== "undefined" && process.nextTick) {
 
 } else if (typeof setImmediate === "function") {
     // In IE10, Node.js 0.9+, or https://github.com/NobleJS/setImmediate
-    if (windowOrWorker) {
-        requestFlush = function () {
-            windowOrWorker.setImmediate(flush);
-        };
-    } else {
-        requestFlush = function () {
-            setImmediate(flush);
-        };
-    }
+    requestFlush = function () {
+        setImmediate(flush);
+    };
 
 } else if (typeof MessageChannel !== "undefined") {
     // modern browsers
