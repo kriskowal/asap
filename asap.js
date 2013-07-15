@@ -7,7 +7,9 @@ var head = {task: void 0, next: null};
 var tail = head;
 var flushing = false;
 var requestFlush = void 0;
+var hasSetImmediate = typeof setImmediate === "function";
 var isNodeJS = false;
+var domain;
 
 function flush() {
     /* jshint loopfunc: true */
@@ -16,11 +18,11 @@ function flush() {
         head = head.next;
         var task = head.task;
         head.task = void 0;
-        var domain = head.domain;
+        var taskDomain = head.domain;
 
-        if (domain) {
+        if (taskDomain) {
             head.domain = void 0;
-            domain.enter();
+            taskDomain.enter();
         }
 
         try {
@@ -33,14 +35,7 @@ function flush() {
 
                 // Ensure continuation if the uncaught exception is suppressed
                 // listening "uncaughtException" events (as domains does).
-                // Continue in next event to avoid tick recursion.
-                if (domain) {
-                    domain.exit();
-                }
-                setTimeout(flush, 0);
-                if (domain) {
-                    domain.enter();
-                }
+                requestFlush();
 
                 throw e;
 
@@ -53,8 +48,8 @@ function flush() {
             }
         }
 
-        if (domain) {
-            domain.exit();
+        if (taskDomain) {
+            taskDomain.exit();
         }
     }
 
@@ -67,10 +62,26 @@ if (typeof process !== "undefined" && process.nextTick) {
     isNodeJS = true;
 
     requestFlush = function () {
-        process.nextTick(flush);
+        // Ensure flushing is not bound to any domain.
+        var currentDomain = process.domain;
+        if (currentDomain) {
+            domain = domain || require("domain");
+            domain.active = process.domain = null;
+        }
+
+        if (flushing && hasSetImmediate) {
+            // Avoid tick recursion - use setImmediate if it exists.
+            setImmediate(flush);
+        } else {
+            process.nextTick(flush);
+        }
+
+        if (currentDomain) {
+            domain.active = process.domain = currentDomain;
+        }
     };
 
-} else if (typeof setImmediate === "function") {
+} else if (hasSetImmediate) {
     // In IE10, Node.js 0.9+, or https://github.com/NobleJS/setImmediate
     if (typeof window !== "undefined") {
         requestFlush = setImmediate.bind(window, flush);
@@ -104,10 +115,9 @@ function asap(task) {
     };
 
     if (!flushing) {
-        flushing = true;
         requestFlush();
+        flushing = true;
     }
 };
 
 module.exports = asap;
-

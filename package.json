@@ -11,8 +11,7 @@
     ],
     "main": "asap",
     "scripts": {
-        "test": "mocha -s 200 -t 10s -r test/faster-in-node test/test.js",
-        "test-slow": "mocha -s 200 -t 60s test/test.js"
+        "test": "mocha -s 200 test/test.js"
     },
     "devDependencies": {
         "mocha": "1.x.x",
