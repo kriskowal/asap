@@ -11,11 +11,12 @@
     ],
     "main": "asap",
     "scripts": {
+        "pretest": "browserify asap.js -s asap -o build.js",
         "test": "mocha -s 200 test/test.js"
     },
     "devDependencies": {
         "mocha": "1.x.x",
-        "expect.js" : "0.2.x"
+        "expect.js": "0.2.x"
     },
     "testling": {
         "browsers": [
