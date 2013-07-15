@@ -1,34 +1,32 @@
 
 "use strict";
 
-var domain;
-
-if ( typeof asap === "undefined" ) {
-    global.asap = require("../asap");
+if (typeof asap === "undefined") {
+    var asap = require("../asap");
     var expect = require("expect.js");
     var mocha = require("mocha");
+
+    var domain;
     try {
         domain = require("domain");
     } catch (e) {}
 }
 
-function error() {
-    n_called_on_error = called_ids.length;
-    throw new Error();
-}
 
-var RECURSIVE = {};
+var MAX_TASKS = 4000;
+var RECURSION_TAG = {};
 
-var MAX_TASKS = global.MAX_TASKS || 4000;
-
-var next_id = 1;
-var expected_ids = [];
-var called_ids = [];
+var expected_oreder = [];
+var called_order = [];
 var n_called_on_error = 0;
 var doneCallback;
 var currDomain;
-var validTag;
 var currPattern;
+
+function error() {
+    n_called_on_error = called_order.length;
+    throw new Error();
+}
 
 afterEach(function () {
     if (currDomain) {
@@ -37,22 +35,23 @@ afterEach(function () {
     }
 });
 
-function queueTask(childs) {
-    if (next_id >= MAX_TASKS) return;
-    var id = next_id++;
+function queueTask(sub_pattern) {
+    var index = expected_oreder.length;
+    if (index >= MAX_TASKS) return;
     var top_pattern = currPattern;
-    expected_ids.push(id);
+
+    expected_oreder.push(index);
 
     asap(function () {
         if (top_pattern === currPattern) {
-            called_ids.push(id);
-            handlePattern(childs);
+            called_order.push(index);
+            handlePattern(sub_pattern);
         }
     });
 }
 
 function handlePattern(pattern) {
-    if (pattern === R) {
+    if (pattern === RECURSION_TAG) {
         pattern = currPattern;
     }
 
@@ -64,8 +63,8 @@ function handlePattern(pattern) {
                 n_called_on_error = -1;
                 x();
             } else {
-                // in browsers exceptions don't halt the flushing,
-                // so do not propagate them - just stop
+                // in browsers exceptions doesn't halt the flushing,
+                // so do not propagate them - just stop.
                 try {
                     x();
                 } catch (e) {
@@ -81,9 +80,9 @@ function handlePattern(pattern) {
 }
 
 function checkIfDone() {
-    if (doneCallback && called_ids.length >= expected_ids.length) {
-        expect(called_ids).to.eql(expected_ids);
-        //console.log(called_ids.length);
+    if (doneCallback && called_order.length >= expected_oreder.length) {
+        expect(called_order).to.eql(expected_oreder);
+        //console.log(called_order.length);
         var done = doneCallback;
         doneCallback = void 0;
         done();
@@ -97,17 +96,16 @@ function runCase(desc) {
 
         var not_halted_on_error = false;
 
-        it("should run expacted tasks in order, regardless of exceptions", function (done) {
-            next_id = 1;
-            expected_ids = [];
-            called_ids = [];
+        it("should run tasks in order", function (done) {
+            expected_oreder = [];
+            called_order = [];
             currPattern = pattern;
             doneCallback = done;
 
             if (domain) {
                 currDomain = domain.create();
                 currDomain.on("error", function () {
-                    if (n_called_on_error !== called_ids.length) {
+                    if (n_called_on_error !== called_order.length) {
                         not_halted_on_error = true;
                     }
                     checkIfDone();
@@ -119,7 +117,7 @@ function runCase(desc) {
                 handlePattern(pattern);
             } catch (e) {}
 
-            expect(called_ids.length).to.be(0);
+            expect(called_order.length).to.be(0);
         });
 
         if (domain) {
@@ -133,7 +131,7 @@ function runCase(desc) {
 //______________________________________________________________________________
 
 var e = error;
-var R = RECURSIVE; // token for recursions
+var R = RECURSION_TAG;
 
 runCase("single task", [] );
 runCase("multiple tasks", [], [], [] );
@@ -145,3 +143,4 @@ runCase("recursion with errors", [R, e] );
 runCase("multiple recursions", [R], [R], [R, e] );
 runCase("recursion - mixed", [R, [], e] );
 runCase("recursion - mixed 2", [R, [[[[], e]]], e] );
+
