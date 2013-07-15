@@ -83,13 +83,9 @@ if (typeof process !== "undefined" && process.nextTick) {
 
 } else if (hasSetImmediate) {
     // In IE10, Node.js 0.9+, or https://github.com/NobleJS/setImmediate
-    if (typeof window !== "undefined") {
-        requestFlush = setImmediate.bind(window, flush);
-    } else {
-        requestFlush = function () {
-            setImmediate(flush);
-        };
-    }
+    requestFlush = function () {
+        setImmediate(flush);
+    };
 
 } else if (typeof MessageChannel !== "undefined") {
     // modern browsers
