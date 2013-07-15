@@ -11,6 +11,9 @@ var hasSetImmediate = typeof setImmediate === "function";
 var isNodeJS = false;
 var domain;
 
+// Avoid shims from browserify.
+var process = global.process;
+
 function flush() {
     /* jshint loopfunc: true */
 
@@ -65,7 +68,7 @@ if (typeof process !== "undefined" && process.nextTick) {
         // Ensure flushing is not bound to any domain.
         var currentDomain = process.domain;
         if (currentDomain) {
-            domain = domain || require("domain");
+            domain = domain || (1,require)("domain");
             domain.active = process.domain = null;
         }
 
