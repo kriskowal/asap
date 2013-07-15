@@ -9,5 +9,13 @@
           "url": "https://github.com/kriskowal/asap/raw/master/LICENSE.md"
         }
     ],
-    "main": "asap"
+    "main": "asap",
+    "scripts": {
+        "test": "mocha -s 200 -t 10s -r test/faster-in-node test/test.js",
+        "test-slow": "mocha -s 200 -t 60s test/test.js"
+    },
+    "devDependencies": {
+        "mocha": "1.x.x",
+        "expect.js" : "0.2.x"
+    }
 }
