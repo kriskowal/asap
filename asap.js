@@ -17,29 +17,28 @@ var process = global.process;
 function flush() {
     /* jshint loopfunc: true */
 
-    if (isNodeJS && head.next) {
-        // Ensure continuation if an uncaught exception is suppressed
-        // listening process.on("uncaughtException") or domain("error").
-        requestFlush();
-    }
-
     while (head.next) {
         head = head.next;
         var task = head.task;
         head.task = void 0;
 
-        if (isNodeJS) {
-            // In node, uncaught exceptions are considered fatal errors.
-            // Let them throw to interrupt flushing!
+        try {
             task();
 
-        } else {
-            // In browsers, uncaught exceptions are not fatal.
-            // Re-throw them asynchronously to avoid slow-downs.
-            try {
-                task();
+        } catch (e) {
+            if (isNodeJS) {
+                // In node, uncaught exceptions are considered fatal errors.
+                // Re-throw them to interrupt flushing!
 
-            } catch (e) {
+                // Ensure continuation if an uncaught exception is suppressed
+                // listening process.on("uncaughtException") or domain("error").
+                requestFlush();
+
+                throw e;
+            
+            } else {
+                // In browsers, uncaught exceptions are not fatal.
+                // Re-throw them asynchronously to avoid slow-downs.
                 setTimeout(function () {
                     throw e;
                 }, 0);
