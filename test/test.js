@@ -144,3 +144,18 @@ runCase("multiple recursions", [R], [R], [R, e] );
 runCase("recursion - mixed", [R, [], e] );
 runCase("recursion - mixed 2", [R, [[[[], e]]], e] );
 
+if (domain) {
+    describe("disposed domains", function () {
+        it("shouldn't run tasks bound to disposed domains", function (done) {
+            var d = domain.create();
+
+            asap(d.bind(function () {
+                expect(true).to.be(false);
+            }));
+
+            d.dispose();
+            
+            asap(done);
+        });
+    });
+}

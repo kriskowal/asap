@@ -17,42 +17,33 @@ var process = global.process;
 function flush() {
     /* jshint loopfunc: true */
 
+    if (isNodeJS && head.next) {
+        // Ensure continuation if an uncaught exception is suppressed
+        // listening process.on("uncaughtException") or domain("error").
+        requestFlush();
+    }
+
     while (head.next) {
         head = head.next;
         var task = head.task;
         head.task = void 0;
-        var taskDomain = head.domain;
 
-        if (taskDomain) {
-            head.domain = void 0;
-            taskDomain.enter();
-        }
-
-        try {
+        if (isNodeJS) {
+            // In node, uncaught exceptions are considered fatal errors.
+            // Let them throw to interrupt flushing!
             task();
 
-        } catch (e) {
-            if (isNodeJS) {
-                // In node, uncaught exceptions are considered fatal errors.
-                // Re-throw them synchronously to interrupt flushing!
+        } else {
+            // In browsers, uncaught exceptions are not fatal.
+            // Re-throw them asynchronously to avoid slow-downs.
+            try {
+                task();
 
-                // Ensure continuation if the uncaught exception is suppressed
-                // listening "uncaughtException" events (as domains does).
-                requestFlush();
-
-                throw e;
-
-            } else {
-                // In browsers, uncaught exceptions are not fatal.
-                // Re-throw them asynchronously to avoid slow-downs.
-                setTimeout(function() {
-                   throw e;
+            } catch (e) {
+                setTimeout(function () {
+                    throw e;
                 }, 0);
             }
-        }
-
-        if (taskDomain) {
-            taskDomain.exit();
         }
     }
 
@@ -72,8 +63,8 @@ if (typeof process !== "undefined" && process.nextTick) {
             domain.active = process.domain = null;
         }
 
+        // Avoid tick recursion - use setImmediate if it exists.
         if (flushing && hasSetImmediate) {
-            // Avoid tick recursion - use setImmediate if it exists.
             setImmediate(flush);
         } else {
             process.nextTick(flush);
@@ -107,11 +98,11 @@ if (typeof process !== "undefined" && process.nextTick) {
 }
 
 function asap(task) {
-    tail = tail.next = {
-        task: task,
-        domain: isNodeJS && process.domain,
-        next: null
-    };
+    if (isNodeJS && process.domain) {
+        task = process.domain.bind(task);
+    }
+
+    tail = tail.next = {task: task, next: null};
 
     if (!flushing) {
         requestFlush();
