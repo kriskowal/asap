@@ -5,11 +5,7 @@ if (typeof asap === "undefined") {
     var asap = require("../asap");
     var expect = require("expect.js");
     var mocha = require("mocha");
-
-    var domain;
-    try {
-        domain = require("domain");
-    } catch (e) {}
+    var domain = require("domain");
 }
 
 
