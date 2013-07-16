@@ -16,15 +16,15 @@ if (typeof asap === "undefined") {
 var MAX_TASKS = 4000;
 var RECURSION_TAG = {};
 
-var expected_oreder = [];
-var called_order = [];
-var n_called_on_error = 0;
+var expectedOrder = [];
+var calledOrder = [];
+var nCalledOnError = 0;
 var doneCallback;
 var currDomain;
 var currPattern;
 
 function error() {
-    n_called_on_error = called_order.length;
+    nCalledOnError = calledOrder.length;
     throw new Error();
 }
 
@@ -36,15 +36,15 @@ afterEach(function () {
 });
 
 function queueTask(sub_pattern) {
-    var index = expected_oreder.length;
+    var index = expectedOrder.length;
     if (index >= MAX_TASKS) return;
     var top_pattern = currPattern;
 
-    expected_oreder.push(index);
+    expectedOrder.push(index);
 
     asap(function () {
         if (top_pattern === currPattern) {
-            called_order.push(index);
+            calledOrder.push(index);
             handlePattern(sub_pattern);
         }
     });
@@ -60,7 +60,7 @@ function handlePattern(pattern) {
 
         if (typeof x === "function") {
             if (currDomain) {
-                n_called_on_error = -1;
+                nCalledOnError = -1;
                 x();
             } else {
                 // in browsers exceptions doesn't halt the flushing,
@@ -80,9 +80,9 @@ function handlePattern(pattern) {
 }
 
 function checkIfDone() {
-    if (doneCallback && called_order.length >= expected_oreder.length) {
-        expect(called_order).to.eql(expected_oreder);
-        //console.log(called_order.length);
+    if (doneCallback && calledOrder.length >= expectedOrder.length) {
+        expect(calledOrder).to.eql(expectedOrder);
+        //console.log(calledOrder.length);
         var done = doneCallback;
         doneCallback = void 0;
         done();
@@ -94,19 +94,19 @@ function runCase(desc) {
 
     describe(desc+": ", function () {
 
-        var not_halted_on_error = false;
+        var notHaltedOnError = false;
 
         it("should run tasks in order", function (done) {
-            expected_oreder = [];
-            called_order = [];
+            expectedOrder = [];
+            calledOrder = [];
             currPattern = pattern;
             doneCallback = done;
 
             if (domain) {
                 currDomain = domain.create();
                 currDomain.on("error", function () {
-                    if (n_called_on_error !== called_order.length) {
-                        not_halted_on_error = true;
+                    if (nCalledOnError !== calledOrder.length) {
+                        notHaltedOnError = true;
                     }
                     checkIfDone();
                 });
@@ -117,12 +117,12 @@ function runCase(desc) {
                 handlePattern(pattern);
             } catch (e) {}
 
-            expect(called_order.length).to.be(0);
+            expect(calledOrder.length).to.be(0);
         });
 
         if (domain) {
             it("should halt flushing until exceptions are not handled", function () {
-                expect(not_halted_on_error).to.be(false);
+                expect(notHaltedOnError).to.be(false);
             });
         }
     });
@@ -154,7 +154,7 @@ if (domain) {
             }));
 
             d.dispose();
-            
+
             asap(done);
         });
     });
