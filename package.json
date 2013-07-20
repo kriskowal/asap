@@ -9,5 +9,26 @@
           "url": "https://github.com/kriskowal/asap/raw/master/LICENSE.md"
         }
     ],
-    "main": "asap"
+    "main": "asap",
+    "scripts": {
+        "pretest": "browserify asap.js -s asap -o build.js",
+        "test": "mocha -s 200 test/test.js"
+    },
+    "devDependencies": {
+        "mocha": "1.x.x",
+        "expect.js": "0.2.x"
+    },
+    "testling": {
+        "browsers": [
+            "ie/6..latest",
+            "firefox/3..5", "firefox/19..nightly",
+            "chrome/4..7", "chrome/24..canary",
+            "opera/10..next",
+            "safari/4..latest",
+            "iphone/6",
+            "ipad/6"
+        ],
+        "harness": "mocha",
+        "files": "test/test.js"
+    }
 }
