@@ -7,7 +7,16 @@ var head = {task: void 0, next: null};
 var tail = head;
 var flushing = false;
 var requestFlush = void 0;
-var isNodeJS = false;
+var hasSetImmediate = typeof setImmediate === "function";
+var domain;
+
+// Avoid shims from browserify.
+// The existence of `global` in browsers is guaranteed by browserify.
+var process = global.process;
+
+// Note that some fake-Node environments,
+// like the Mocha test runner, introduce a `process` global.
+var isNodeJS = process && ({}).toString.call(process) === "[object process]";
 
 function flush() {
     /* jshint loopfunc: true */
@@ -16,12 +25,6 @@ function flush() {
         head = head.next;
         var task = head.task;
         head.task = void 0;
-        var domain = head.domain;
-
-        if (domain) {
-            head.domain = void 0;
-            domain.enter();
-        }
 
         try {
             task();
@@ -29,56 +32,54 @@ function flush() {
         } catch (e) {
             if (isNodeJS) {
                 // In node, uncaught exceptions are considered fatal errors.
-                // Re-throw them synchronously to interrupt flushing!
+                // Re-throw them to interrupt flushing!
 
-                // Ensure continuation if the uncaught exception is suppressed
-                // listening "uncaughtException" events (as domains does).
-                // Continue in next event to avoid tick recursion.
-                if (domain) {
-                    domain.exit();
-                }
-                setTimeout(flush, 0);
-                if (domain) {
-                    domain.enter();
-                }
+                // Ensure continuation if an uncaught exception is suppressed
+                // listening process.on("uncaughtException") or domain("error").
+                requestFlush();
 
                 throw e;
 
             } else {
                 // In browsers, uncaught exceptions are not fatal.
                 // Re-throw them asynchronously to avoid slow-downs.
-                setTimeout(function() {
-                   throw e;
+                setTimeout(function () {
+                    throw e;
                 }, 0);
             }
-        }
-
-        if (domain) {
-            domain.exit();
         }
     }
 
     flushing = false;
 }
 
-if (typeof process !== "undefined" && process.nextTick) {
-    // Node.js before 0.9. Note that some fake-Node environments, like the
-    // Mocha test runner, introduce a `process` global without a `nextTick`.
-    isNodeJS = true;
-
+if (isNodeJS) {
+    // Node.js
     requestFlush = function () {
-        process.nextTick(flush);
+        // Ensure flushing is not bound to any domain.
+        var currentDomain = process.domain;
+        if (currentDomain) {
+            domain = domain || (1,require)("domain");
+            domain.active = process.domain = null;
+        }
+
+        // Avoid tick recursion - use setImmediate if it exists.
+        if (flushing && hasSetImmediate) {
+            setImmediate(flush);
+        } else {
+            process.nextTick(flush);
+        }
+
+        if (currentDomain) {
+            domain.active = process.domain = currentDomain;
+        }
     };
 
-} else if (typeof setImmediate === "function") {
-    // In IE10, Node.js 0.9+, or https://github.com/NobleJS/setImmediate
-    if (typeof window !== "undefined") {
-        requestFlush = setImmediate.bind(window, flush);
-    } else {
-        requestFlush = function () {
-            setImmediate(flush);
-        };
-    }
+} else if (hasSetImmediate) {
+    // In IE10, or https://github.com/NobleJS/setImmediate
+    requestFlush = function () {
+        setImmediate(flush);
+    };
 
 } else if (typeof MessageChannel !== "undefined") {
     // modern browsers
@@ -97,17 +98,16 @@ if (typeof process !== "undefined" && process.nextTick) {
 }
 
 function asap(task) {
-    tail = tail.next = {
-        task: task,
-        domain: isNodeJS && process.domain,
-        next: null
-    };
+    if (isNodeJS && process.domain) {
+        task = process.domain.bind(task);
+    }
+
+    tail = tail.next = {task: task, next: null};
 
     if (!flushing) {
-        flushing = true;
         requestFlush();
+        flushing = true;
     }
 };
 
 module.exports = asap;
-
