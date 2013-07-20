@@ -8,12 +8,15 @@ var tail = head;
 var flushing = false;
 var requestFlush = void 0;
 var hasSetImmediate = typeof setImmediate === "function";
-var isNodeJS = false;
 var domain;
 
 // Avoid shims from browserify.
 // The existence of `global` in browsers is guaranteed by browserify.
 var process = global.process;
+
+// Note that some fake-Node environments,
+// like the Mocha test runner, introduce a `process` global.
+var isNodeJS = process && ({}).toString.call(process) === "[object process]";
 
 function flush() {
     /* jshint loopfunc: true */
@@ -50,11 +53,8 @@ function flush() {
     flushing = false;
 }
 
-if (typeof process !== "undefined" && process.nextTick) {
-    // Node.js before 0.9. Note that some fake-Node environments, like the
-    // Mocha test runner, introduce a `process` global without a `nextTick`.
-    isNodeJS = true;
-
+if (isNodeJS) {
+    // Node.js
     requestFlush = function () {
         // Ensure flushing is not bound to any domain.
         var currentDomain = process.domain;
@@ -76,7 +76,7 @@ if (typeof process !== "undefined" && process.nextTick) {
     };
 
 } else if (hasSetImmediate) {
-    // In IE10, Node.js 0.9+, or https://github.com/NobleJS/setImmediate
+    // In IE10, or https://github.com/NobleJS/setImmediate
     requestFlush = function () {
         setImmediate(flush);
     };
