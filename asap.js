@@ -35,7 +35,7 @@ function flush() {
                 requestFlush();
 
                 throw e;
-            
+
             } else {
                 // In browsers, uncaught exceptions are not fatal.
                 // Re-throw them asynchronously to avoid slow-downs.

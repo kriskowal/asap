@@ -140,19 +140,40 @@ runCase("multiple recursions", [R], [R], [R, e] );
 runCase("recursion - mixed", [R, [], e] );
 runCase("recursion - mixed 2", [R, [[[[], e]]], e] );
 
-// TODO: remove in future!
-if (domain && domain.create().dispose) {
-    describe("disposed domains", function () {
-        it("shouldn't run tasks bound to disposed domains", function (done) {
-            var d = domain.create();
+if (domain) {
+    describe("asap() and domains:", function () {
 
-            asap(d.bind(function () {
-                expect(true).to.be(false);
-            }));
+        it("should bind tasks to active domain", function (done) {
+            var domain0 = domain.active;
+            var domain1 = domain.create();
 
-            d.dispose();
+            //expect(!!domain0).to.be(false);
 
-            asap(done);
+            domain1.run(function () {
+                asap(function () {
+                   expect(domain.active).to.be(domain1);
+                });
+            });
+
+            asap(function () {
+                expect(domain.active).to.be(domain0);
+                done();
+            });
         });
+
+        // TODO: remove in future!
+        if (domain.create().dispose) {
+            it("shouldn't run taskks bound to disposed domains", function (done) {
+                var d = domain.create();
+
+                asap(d.bind(function () {
+                    expect(true).to.be(false);
+                }));
+
+                d.dispose();
+
+                asap(done);
+            });
+        }
     });
 }
