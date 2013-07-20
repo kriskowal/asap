@@ -12,6 +12,7 @@ var isNodeJS = false;
 var domain;
 
 // Avoid shims from browserify.
+// The existence of `global` in browsers is guaranteed by browserify.
 var process = global.process;
 
 function flush() {
