@@ -16,7 +16,7 @@ var process = global.process;
 
 // Note that some fake-Node environments,
 // like the Mocha test runner, introduce a `process` global.
-var isNodeJS = process && ({}).toString.call(process) === "[object process]";
+var isNodeJS = !!process && ({}).toString.call(process) === "[object process]";
 
 function flush() {
     /* jshint loopfunc: true */
