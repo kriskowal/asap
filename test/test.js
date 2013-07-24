@@ -15,7 +15,6 @@ if (typeof asap === "undefined") {
     } catch (e) {};
 }
 
-
 var MAX_TASKS = 4000;
 var RECURSION_TAG = {};
 
@@ -27,70 +26,78 @@ var doneCallback;
 var currDomain;
 var currPattern;
 
-function error() {
-    if (currDomain) {
-        nErrorsToHandle++;
-    }
-    throw new Error();
-}
-
 afterEach(function () {
+    //console.log(calledOrder.length);
+    expectedOrder = [];
+    calledOrder = [];
+    nErrorsToHandle = 0;
+    nTasksCalledBeforeErrorEvent = 0;
+    doneCallback = void 0;
+    currDomain = void 0;
+    currPattern = void 0;
     if (currDomain) {
         currDomain.exit();
         currDomain = null;
     }
 });
 
-function queueTask(sub_pattern) {
-    var index = expectedOrder.length;
-    if (index >= MAX_TASKS) return;
-    var top_pattern = currPattern;
+var _asap = asap;
 
+asap = function (task) {
+    var index = expectedOrder.length;
+    if (index >= MAX_TASKS) {
+        return;
+    }
+
+    var topPattern = currPattern;
     expectedOrder.push(index);
 
-    asap(function () {
-        if (top_pattern !== currPattern) {
-            return;
+    _asap(function () {
+        if (topPattern !== currPattern) {
+           return;
         }
 
         if (nErrorsToHandle) {
-            nTasksCalledBeforeErrorEvent++;
+           ++nTasksCalledBeforeErrorEvent;
         }
 
         calledOrder.push(index);
-        handlePattern(sub_pattern);
+
+        try {
+            if (typeof task === "function") {
+                task();
+            } else {
+                runPattern(task);
+            }
+
+        } catch (e) {
+            if (currDomain) {
+                ++nErrorsToHandle;
+                throw e;
+            }
+        }
+
+        maybeDone();
     });
-}
+};
 
-function handlePattern(pattern) {
-    if (pattern === RECURSION_TAG) {
-        pattern = currPattern;
-    }
-
+function runPattern(pattern) {
     for (var i = 0; i < pattern.length; ++i) {
         var x = pattern[i];
 
-        if (typeof x === "function") {
-            if (currDomain) {
-                x();
-            } else {
-                // in browsers exceptions doesn't halt the flushing,
-                // so do not propagate them - just stop.
-                try {
-                    x();
-                } catch (e) {
-                    break;
-                }
-            }
+        if (x === RECURSION_TAG) {
+            runPattern(currPattern);
+
+        } else if (typeof x === "function") {
+            x();
+
         } else {
-            queueTask(x);
+            asap(x);
         }
     }
-
-    checkIfDone();
 }
 
-function checkIfDone() {
+function maybeDone() {
     if (doneCallback && nErrorsToHandle === 0 && calledOrder.length >= expectedOrder.length) {
         expect(calledOrder).to.eql(expectedOrder);
         //console.log(calledOrder.length);
@@ -106,10 +113,6 @@ function runCase(desc) {
     describe(desc+": ", function () {
 
         it("should run tasks in order", function (done) {
-            expectedOrder = [];
-            calledOrder = [];
-            nErrorsToHandle = 0;
-            nTasksCalledBeforeErrorEvent = 0;
             currPattern = pattern;
             doneCallback = done;
 
@@ -117,18 +120,18 @@ function runCase(desc) {
                 currDomain = domain.create();
                 currDomain.on("error", function () {
                     nErrorsToHandle--;
-                    checkIfDone();
+                    maybeDone();
                 });
                 currDomain.enter();
             }
 
             try {
-                handlePattern(pattern);
-            } catch (e) {
-                nErrorsToHandle--;
-            }
+                runPattern(pattern);
+            } catch (e) {}
 
             expect(calledOrder.length).to.be(0);
+
+            maybeDone();
         });
 
         if (domain) {
@@ -141,6 +144,10 @@ function runCase(desc) {
 
 //______________________________________________________________________________
 
+function error() {
+    throw new Error();
+}
+
 var e = error;
 var R = RECURSION_TAG;
 
@@ -148,9 +155,29 @@ runCase("single task", [] );
 runCase("multiple tasks", [], [], [] );
 runCase("multiple tasks that throws", [e], [e], [e] );
 runCase("multiple mixed tasks", [], [e], [], [e], [e], [], [] );
+
 runCase("errors at end", [[e], e], e );
+//runCase("errors at end", function () {
+//    asap(function () {
+//        asap(error);
+//        error();
+//    });
+//    error();
+//});
+
 runCase("recursion", [R] );
+//runCase("recursion", function run() {
+//    asap(run);
+//});
+
 runCase("recursion with errors", [R, e] );
+//runCase("recursion", function run() {
+//    asap(function () {
+//        run();
+//        throw new Error();
+//    });
+//});
+
 runCase("multiple recursions", [R], [R], [R, e] );
 runCase("recursion - mixed", [R, [], e] );
 runCase("recursion - mixed 2", [R, [[[[], e]]], e] );
