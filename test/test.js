@@ -1,10 +1,10 @@
 
 "use strict";
 
-// Make browserify ignore node-only modules.
-var requireNodeOnly = require;
-
 if (typeof asap === "undefined") {
+    // Make browserify ignore node-only modules.
+    var requireNodeOnly = require;
+
     var asap = require("../asap");
     var expect = require("expect.js");
     var mocha = global.mocha || requireNodeOnly("mocha");
