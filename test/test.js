@@ -171,7 +171,7 @@ runCase("recursion", [R] );
 //});
 
 runCase("recursion with errors", [R, e] );
-//runCase("recursion", function run() {
+//runCase("recursion with errors", function run() {
 //    asap(function () {
 //        run();
 //        throw new Error();
