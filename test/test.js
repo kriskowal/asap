@@ -5,7 +5,12 @@ if (typeof asap === "undefined") {
     var asap = require("../asap");
     var expect = require("expect.js");
     var mocha = require("mocha");
-    var domain = require("domain");
+
+    // Some environments (node 0.6, browsers) do not have domains.
+    try {
+        // Make browserify ignore the domain module.
+        var domain = (1,require)("domain");
+    } catch (e) {};
 }
 
 
