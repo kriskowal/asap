@@ -1,15 +1,17 @@
 
 "use strict";
 
+// Make browserify ignore node-only modules.
+var requireNodeOnly = require;
+
 if (typeof asap === "undefined") {
     var asap = require("../asap");
     var expect = require("expect.js");
-    var mocha = require("mocha");
+    var mocha = global.mocha || requireNodeOnly("mocha");
 
     // Some environments (node 0.6, browsers) do not have domains.
     try {
-        // Make browserify ignore the domain module.
-        var domain = (1,require)("domain");
+        var domain = requireNodeOnly("domain");
     } catch (e) {};
 }
 
