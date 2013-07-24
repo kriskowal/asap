@@ -15,7 +15,7 @@ var RECURSION_TAG = {};
 var expectedOrder = [];
 var calledOrder = [];
 var nErrorsToHandle = 0;
-var nTasksCalledTooSoon = 0;
+var nTasksCalledBeforeErrorEvent = 0;
 var doneCallback;
 var currDomain;
 var currPattern;
@@ -47,7 +47,7 @@ function queueTask(sub_pattern) {
         }
 
         if (nErrorsToHandle) {
-            nTasksCalledTooSoon++;
+            nTasksCalledBeforeErrorEvent++;
         }
 
         calledOrder.push(index);
@@ -102,7 +102,7 @@ function runCase(desc) {
             expectedOrder = [];
             calledOrder = [];
             nErrorsToHandle = 0;
-            nTasksCalledTooSoon = 0;
+            nTasksCalledBeforeErrorEvent = 0;
             currPattern = pattern;
             doneCallback = done;
 
@@ -124,9 +124,11 @@ function runCase(desc) {
             expect(calledOrder.length).to.be(0);
         });
 
-        it("should halt flushing until exceptions are not handled", function () {
-            expect(nTasksCalledTooSoon).to.be(0);
-        });
+        if (domain) {
+            it("should halt flushing until exceptions are not handled", function () {
+                expect(nTasksCalledBeforeErrorEvent).to.be(0);
+            });
+        }
     });
 }
 
