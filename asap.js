@@ -31,14 +31,11 @@ function flush() {
 
         } catch (e) {
             if (isNodeJS) {
-                // In node, uncaught exceptions are considered fatal errors.
-                // Re-throw them to interrupt flushing!
-
                 // Ensure continuation if an uncaught exception is suppressed
-                // listening process.on("uncaughtException") or domain("error").
+                // listening process.on("uncaughtException").
                 requestFlush();
 
-                throw e;
+                process.emit("error", e);
 
             } else {
                 // In browsers, uncaught exceptions are not fatal.
