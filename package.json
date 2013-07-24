@@ -15,6 +15,7 @@
         "test": "mocha -s 200 test/test.js"
     },
     "devDependencies": {
+        "browserify": "2.x.x",
         "mocha": "1.x.x",
         "expect.js": "0.2.x"
     },
