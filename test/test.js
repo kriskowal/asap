@@ -14,13 +14,16 @@ var RECURSION_TAG = {};
 
 var expectedOrder = [];
 var calledOrder = [];
-var nCalledOnError = 0;
+var nErrorsToHandle = 0;
+var nTasksCalledTooSoon = 0;
 var doneCallback;
 var currDomain;
 var currPattern;
 
 function error() {
-    nCalledOnError = calledOrder.length;
+    if (currDomain) {
+        nErrorsToHandle++;
+    }
     throw new Error();
 }
 
@@ -39,10 +42,16 @@ function queueTask(sub_pattern) {
     expectedOrder.push(index);
 
     asap(function () {
-        if (top_pattern === currPattern) {
-            calledOrder.push(index);
-            handlePattern(sub_pattern);
+        if (top_pattern !== currPattern) {
+            return;
         }
+
+        if (nErrorsToHandle) {
+            nTasksCalledTooSoon++;
+        }
+
+        calledOrder.push(index);
+        handlePattern(sub_pattern);
     });
 }
 
@@ -56,7 +65,6 @@ function handlePattern(pattern) {
 
         if (typeof x === "function") {
             if (currDomain) {
-                nCalledOnError = -1;
                 x();
             } else {
                 // in browsers exceptions doesn't halt the flushing,
@@ -76,7 +84,7 @@ function handlePattern(pattern) {
 }
 
 function checkIfDone() {
-    if (doneCallback && calledOrder.length >= expectedOrder.length) {
+    if (doneCallback && nErrorsToHandle === 0 && calledOrder.length >= expectedOrder.length) {
         expect(calledOrder).to.eql(expectedOrder);
         //console.log(calledOrder.length);
         var done = doneCallback;
@@ -90,20 +98,18 @@ function runCase(desc) {
 
     describe(desc+": ", function () {
 
-        var notHaltedOnError = false;
-
         it("should run tasks in order", function (done) {
             expectedOrder = [];
             calledOrder = [];
+            nErrorsToHandle = 0;
+            nTasksCalledTooSoon = 0;
             currPattern = pattern;
             doneCallback = done;
 
             if (domain) {
                 currDomain = domain.create();
                 currDomain.on("error", function () {
-                    if (nCalledOnError !== calledOrder.length) {
-                        notHaltedOnError = true;
-                    }
+                    nErrorsToHandle--;
                     checkIfDone();
                 });
                 currDomain.enter();
@@ -111,16 +117,16 @@ function runCase(desc) {
 
             try {
                 handlePattern(pattern);
-            } catch (e) {}
+            } catch (e) {
+                nErrorsToHandle--;
+            }
 
             expect(calledOrder.length).to.be(0);
         });
 
-        if (domain) {
-            it("should halt flushing until exceptions are not handled", function () {
-                expect(notHaltedOnError).to.be(false);
-            });
-        }
+        it("should halt flushing until exceptions are not handled", function () {
+            expect(nTasksCalledTooSoon).to.be(0);
+        });
     });
 }
 
