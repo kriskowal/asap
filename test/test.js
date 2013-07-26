@@ -1,10 +1,10 @@
 
 "use strict";
 
-// Make browserify ignore node-only modules.
-var requireNodeOnly = require;
-
 if (typeof asap === "undefined") {
+    // Make browserify ignore node-only modules.
+    var requireNodeOnly = require;
+
     var asap = require("../asap");
     var expect = require("expect.js");
     var mocha = global.mocha || requireNodeOnly("mocha");
@@ -15,120 +15,117 @@ if (typeof asap === "undefined") {
     } catch (e) {};
 }
 
-
 var MAX_TASKS = 4000;
 var RECURSION_TAG = {};
-
-var expectedOrder = [];
-var calledOrder = [];
-var nErrorsToHandle = 0;
-var nTasksCalledBeforeErrorEvent = 0;
-var doneCallback;
-var currDomain;
-var currPattern;
-
-function error() {
-    if (currDomain) {
-        nErrorsToHandle++;
-    }
-    throw new Error();
-}
+var ASAP = asap;
 
 afterEach(function () {
-    if (currDomain) {
-        currDomain.exit();
-        currDomain = null;
-    }
+    asap = ASAP;
 });
 
-function queueTask(sub_pattern) {
-    var index = expectedOrder.length;
-    if (index >= MAX_TASKS) return;
-    var top_pattern = currPattern;
-
-    expectedOrder.push(index);
-
-    asap(function () {
-        if (top_pattern !== currPattern) {
-            return;
-        }
-
-        if (nErrorsToHandle) {
-            nTasksCalledBeforeErrorEvent++;
-        }
-
-        calledOrder.push(index);
-        handlePattern(sub_pattern);
-    });
-}
-
-function handlePattern(pattern) {
-    if (pattern === RECURSION_TAG) {
-        pattern = currPattern;
-    }
-
-    for (var i = 0; i < pattern.length; ++i) {
-        var x = pattern[i];
-
-        if (typeof x === "function") {
-            if (currDomain) {
-                x();
-            } else {
-                // in browsers exceptions doesn't halt the flushing,
-                // so do not propagate them - just stop.
-                try {
-                    x();
-                } catch (e) {
-                    break;
-                }
-            }
-        } else {
-            queueTask(x);
-        }
-    }
-
-    checkIfDone();
-}
-
-function checkIfDone() {
-    if (doneCallback && nErrorsToHandle === 0 && calledOrder.length >= expectedOrder.length) {
-        expect(calledOrder).to.eql(expectedOrder);
-        //console.log(calledOrder.length);
-        var done = doneCallback;
-        doneCallback = void 0;
-        done();
-    }
-}
 
 function runCase(desc) {
-    var pattern = [].slice.call(arguments, 1);
+    var topPattern = [].slice.call(arguments, 1);
 
     describe(desc+": ", function () {
 
+        var nTasksCalledBeforeErrorEvent = 0;
+
         it("should run tasks in order", function (done) {
-            expectedOrder = [];
-            calledOrder = [];
-            nErrorsToHandle = 0;
+            var expectedOrder = [];
+            var calledOrder = [];
+            var nErrorsToHandle = 0;
+            var currDomain;
+            var finished = false;
+
             nTasksCalledBeforeErrorEvent = 0;
-            currPattern = pattern;
-            doneCallback = done;
+            asap = tmpAsap;
 
             if (domain) {
                 currDomain = domain.create();
                 currDomain.on("error", function () {
                     nErrorsToHandle--;
-                    checkIfDone();
+                    maybeDone();
                 });
                 currDomain.enter();
             }
 
             try {
-                handlePattern(pattern);
-            } catch (e) {
-                nErrorsToHandle--;
-            }
+                runPattern(topPattern);
+            } catch (e) {}
 
             expect(calledOrder.length).to.be(0);
+
+            maybeDone();
+
+
+            function tmpAsap(task) {
+                var index = expectedOrder.length;
+                if (index >= MAX_TASKS) {
+                    return;
+                }
+
+                expectedOrder.push(index);
+
+                ASAP(function () {
+                    if (finished) {
+                        return;
+                    }
+
+                    calledOrder.push(index);
+
+                    if (nErrorsToHandle) {
+                       ++nTasksCalledBeforeErrorEvent;
+                    }
+
+                    try {
+                        if (typeof task === "function") {
+                            task();
+                        } else {
+                            runPattern(task);
+                        }
+
+                    } catch (e) {
+                        if (currDomain) {
+                            ++nErrorsToHandle;
+                            throw e;
+                        }
+                    }
+
+                    maybeDone();
+                });
+            }
+
+            function runPattern(pattern) {
+                for (var i = 0; i < pattern.length; ++i) {
+                    var x = pattern[i];
+
+                    if (x === RECURSION_TAG) {
+                        runPattern(topPattern);
+
+                    } else if (typeof x === "function") {
+                        x();
+
+                    } else {
+                        asap(x);
+                    }
+                }
+            }
+
+            function maybeDone() {
+                if (!finished && !nErrorsToHandle &&
+                    calledOrder.length >= expectedOrder.length) {
+
+                    finished = true;
+                    if (currDomain) {
+                        currDomain.exit();
+                    }
+
+                    expect(calledOrder).to.eql(expectedOrder);
+
+                    done();
+                }
+            }
         });
 
         if (domain) {
@@ -141,6 +138,10 @@ function runCase(desc) {
 
 //______________________________________________________________________________
 
+function error() {
+    throw new Error();
+}
+
 var e = error;
 var R = RECURSION_TAG;
 
@@ -148,9 +149,29 @@ runCase("single task", [] );
 runCase("multiple tasks", [], [], [] );
 runCase("multiple tasks that throws", [e], [e], [e] );
 runCase("multiple mixed tasks", [], [e], [], [e], [e], [], [] );
+
 runCase("errors at end", [[e], e], e );
+//runCase("errors at end", function () {
+//    asap(function () {
+//        asap(error);
+//        error();
+//    });
+//    error();
+//});
+
 runCase("recursion", [R] );
+//runCase("recursion", function run() {
+//    asap(run);
+//});
+
 runCase("recursion with errors", [R, e] );
+//runCase("recursion with errors", function run() {
+//    asap(function () {
+//        run();
+//        throw new Error();
+//    });
+//});
+
 runCase("multiple recursions", [R], [R], [R, e] );
 runCase("recursion - mixed", [R, [], e] );
 runCase("recursion - mixed 2", [R, [[[[], e]]], e] );
@@ -178,12 +199,26 @@ if (domain) {
 
         // TODO: remove in future!
         if (domain.create().dispose) {
-            it("shouldn't run taskks bound to disposed domains", function (done) {
+            it("shouldn't run tasks bound to disposed domains", function (done) {
                 var d = domain.create();
 
                 asap(d.bind(function () {
                     expect(true).to.be(false);
                 }));
+
+                d.dispose();
+
+                asap(done);
+            });
+
+            it("shouldn't run tasks implicitly bounded to disposed domains", function (done) {
+                var d = domain.create();
+
+                d.run(function () {
+                    asap(function () {
+                        expect(true).to.be(false);
+                    });
+                });
 
                 d.dispose();
 
