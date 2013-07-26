@@ -199,12 +199,26 @@ if (domain) {
 
         // TODO: remove in future!
         if (domain.create().dispose) {
-            it("shouldn't run taskks bound to disposed domains", function (done) {
+            it("shouldn't run tasks bound to disposed domains", function (done) {
                 var d = domain.create();
 
                 asap(d.bind(function () {
                     expect(true).to.be(false);
                 }));
+
+                d.dispose();
+
+                asap(done);
+            });
+
+            it("shouldn't run tasks implicitly bounded to disposed domains", function (done) {
+                var d = domain.create();
+
+                d.run(function () {
+                    asap(function () {
+                        expect(true).to.be(false);
+                    });
+                });
 
                 d.dispose();
 
