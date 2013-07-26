@@ -17,104 +17,29 @@ if (typeof asap === "undefined") {
 
 var MAX_TASKS = 4000;
 var RECURSION_TAG = {};
-
-var expectedOrder = [];
-var calledOrder = [];
-var nErrorsToHandle = 0;
-var nTasksCalledBeforeErrorEvent = 0;
-var doneCallback;
-var currDomain;
-var currPattern;
+var ASAP = asap;
 
 afterEach(function () {
-    //console.log(calledOrder.length);
-    expectedOrder = [];
-    calledOrder = [];
-    nErrorsToHandle = 0;
-    nTasksCalledBeforeErrorEvent = 0;
-    doneCallback = void 0;
-    currDomain = void 0;
-    currPattern = void 0;
-    if (currDomain) {
-        currDomain.exit();
-        currDomain = null;
-    }
+    asap = ASAP;
 });
 
-var _asap = asap;
-
-asap = function (task) {
-    var index = expectedOrder.length;
-    if (index >= MAX_TASKS) {
-        return;
-    }
-
-    var topPattern = currPattern;
-    expectedOrder.push(index);
-
-    _asap(function () {
-        if (topPattern !== currPattern) {
-           return;
-        }
-
-        if (nErrorsToHandle) {
-           ++nTasksCalledBeforeErrorEvent;
-        }
-
-        calledOrder.push(index);
-
-        try {
-            if (typeof task === "function") {
-                task();
-            } else {
-                runPattern(task);
-            }
-
-        } catch (e) {
-            if (currDomain) {
-                ++nErrorsToHandle;
-                throw e;
-            }
-        }
-
-        maybeDone();
-    });
-};
-
-function runPattern(pattern) {
-    for (var i = 0; i < pattern.length; ++i) {
-        var x = pattern[i];
-
-        if (x === RECURSION_TAG) {
-            runPattern(currPattern);
-
-        } else if (typeof x === "function") {
-            x();
-
-        } else {
-            asap(x);
-        }
-    }
-}
-
-function maybeDone() {
-    if (doneCallback && nErrorsToHandle === 0 && calledOrder.length >= expectedOrder.length) {
-        expect(calledOrder).to.eql(expectedOrder);
-        //console.log(calledOrder.length);
-        var done = doneCallback;
-        doneCallback = void 0;
-        done();
-    }
-}
 
 function runCase(desc) {
-    var pattern = [].slice.call(arguments, 1);
+    var topPattern = [].slice.call(arguments, 1);
 
     describe(desc+": ", function () {
 
+        var nTasksCalledBeforeErrorEvent = 0;
+
         it("should run tasks in order", function (done) {
-            currPattern = pattern;
-            doneCallback = done;
+            var expectedOrder = [];
+            var calledOrder = [];
+            var nErrorsToHandle = 0;
+            var currDomain;
+            var finished = false;
+
+            nTasksCalledBeforeErrorEvent = 0;
+            asap = tmpAsap;
 
             if (domain) {
                 currDomain = domain.create();
@@ -126,12 +51,81 @@ function runCase(desc) {
             }
 
             try {
-                runPattern(pattern);
+                runPattern(topPattern);
             } catch (e) {}
 
             expect(calledOrder.length).to.be(0);
 
             maybeDone();
+
+
+            function tmpAsap(task) {
+                var index = expectedOrder.length;
+                if (index >= MAX_TASKS) {
+                    return;
+                }
+
+                expectedOrder.push(index);
+
+                ASAP(function () {
+                    if (finished) {
+                        return;
+                    }
+
+                    calledOrder.push(index);
+
+                    if (nErrorsToHandle) {
+                       ++nTasksCalledBeforeErrorEvent;
+                    }
+
+                    try {
+                        if (typeof task === "function") {
+                            task();
+                        } else {
+                            runPattern(task);
+                        }
+
+                    } catch (e) {
+                        if (currDomain) {
+                            ++nErrorsToHandle;
+                            throw e;
+                        }
+                    }
+
+                    maybeDone();
+                });
+            }
+
+            function runPattern(pattern) {
+                for (var i = 0; i < pattern.length; ++i) {
+                    var x = pattern[i];
+
+                    if (x === RECURSION_TAG) {
+                        runPattern(topPattern);
+
+                    } else if (typeof x === "function") {
+                        x();
+
+                    } else {
+                        asap(x);
+                    }
+                }
+            }
+
+            function maybeDone() {
+                if (!finished && !nErrorsToHandle &&
+                    calledOrder.length >= expectedOrder.length) {
+
+                    finished = true;
+                    if (currDomain) {
+                        currDomain.exit();
+                    }
+
+                    expect(calledOrder).to.eql(expectedOrder);
+
+                    done();
+                }
+            }
         });
 
         if (domain) {
