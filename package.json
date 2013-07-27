@@ -7,6 +7,10 @@
       "type": "MIT",
       "url": "https://github.com/kriskowal/asap/raw/master/LICENSE.md"
     },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kriskowal/asap.git"
+    },
     "main": "asap",
     "scripts": {
         "pretest": "browserify asap.js -s asap -o build.js",
