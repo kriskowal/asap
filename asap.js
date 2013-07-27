@@ -1,3 +1,4 @@
+"use strict";
 
 // Use the fastest possible means to execute a task in a future turn
 // of the event loop.
