@@ -15,13 +15,53 @@ if (typeof asap === "undefined") {
     } catch (e) {};
 }
 
+
 var MAX_TASKS = 4000;
 var RECURSION_TAG = {};
 var ASAP = asap;
+var process = global.process;
+
+// Be sure to use the Node.js process!
+if (({}).toString.call(process) !== "[object process]") {
+    process = null;
+}
 
 afterEach(function () {
     asap = ASAP;
 });
+
+
+function ignoreError(error) {
+    error._asap_ignore_this_ = true;
+}
+
+// Workaround for https://github.com/joyent/node/issues/4375 -
+// "domain.on('error') should suppress other uncaughtException handlers"
+if (process) (function(){
+    var on = process.on;
+    var removeListener = process.removeListener;
+
+    function wrap(handler) {
+        handler._asap_wrapper_ = function (er) {
+            if (!er._asap_ignore_this_) {
+                handler(er);
+            }
+        };
+        return handler._asap_wrapper_;
+    }
+
+    process.on = function(type, handler) {
+        if (type === "uncaughtException") {
+            handler = wrap(handler);
+        }
+
+        return on.call(process, type, handler);
+    };
+
+    process.removeListener = function(type, handler) {
+        return removeListener.call(process, type, handler._asap_wrapper_ || handler);
+    };
+})();
 
 
 function runCase(desc) {
@@ -43,7 +83,8 @@ function runCase(desc) {
 
             if (domain) {
                 currDomain = domain.create();
-                currDomain.on("error", function () {
+                currDomain.on("error", function (er) {
+                    ignoreError(er);
                     nErrorsToHandle--;
                     maybeDone();
                 });
