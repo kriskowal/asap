@@ -48,9 +48,9 @@ overhead of returning a handle and being possible to cancel. For a
 In browsers, if a task throws an exception, it will not interrupt the flushing
 of high-priority tasks. The exception will be postponed to a later,
 low-priority event to avoid slow-downs.
-In NodeJS, on the other hand, if a task throws an exception, it will halt
-the flushing until exception is not handled by a `domain.on("error")`
-or `process.on("uncaughtException")` handler.
+In NodeJS, on the other hand, if a task throws an exception, ASAP will
+resume flushing only if—and only after—the error is handled by 
+`domain.on("error")` or `process.on("uncaughtException")`.
 
 ## Heritage
 
