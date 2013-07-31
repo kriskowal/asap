@@ -1,32 +1,41 @@
 "use strict";
 
+var _ = require("lodash");
 var EventEmitter = require("events").EventEmitter;
-var asap = require("..");
 
 // This is a very rudimentary domain shim meant only to work with asap and with asap's tests. Unlike the real domain
-// module, it requires manual teardown. It hooks in to `asap.onerror`.
+// module, it requires manual teardown.
 
-var domainIsActive = false;
+var activeDomain = null;
 
 exports.create = function () {
-    if (domainIsActive) {
+    if (activeDomain) {
         throw new Error("A domain is already active! You need to tear it down first!");
     }
-    domainIsActive = true;
 
-    var d = new EventEmitter();
-    d.run = function (f) {
+    activeDomain = new EventEmitter();
+    activeDomain.run = function (f) {
         f();
     };
 
-    asap.onerror = function (error) {
-        d.emit("error", error);
-    };
-
-    return d;
+    return activeDomain;
 };
 
+global.asap = _.wrap(asap, function (originalAsap, task) {
+    originalAsap(function () {
+        try {
+            task();
+
+        } catch (error) {
+            if (activeDomain) {
+                activeDomain.emit("error", error);
+            } else {
+                throw error;
+            }
+        }
+    });
+});
+
 exports.teardown = function () {
-    asap.onerror = null;
-    domainIsActive = false;
+    activeDomain = null;
 };

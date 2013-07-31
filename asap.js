@@ -39,22 +39,14 @@ function flush() {
                 // listening process.on("uncaughtException") or domain("error").
                 requestFlush();
 
-                if (asap.onerror) {
-                    asap.onerror(e);
-                    return;
-                } else {
-                    throw e;
-                }
+                throw e;
+
             } else {
                 // In browsers, uncaught exceptions are not fatal.
                 // Re-throw them asynchronously to avoid slow-downs.
-                if (asap.onerror) {
-                    asap.onerror(e);
-                } else {
-                    setTimeout(function () {
-                        throw e;
-                    }, 0);
-                }
+                setTimeout(function () {
+                    throw e;
+                }, 0);
             }
         }
     }

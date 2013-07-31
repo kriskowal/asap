@@ -1,6 +1,6 @@
 "use strict";
 
-var asap = require("..");
+global.asap = require("..");
 var assert = require("assert");
 var _ = require("lodash");
 var domain = require("./domain-implementation");
