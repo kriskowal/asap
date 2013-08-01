@@ -28,7 +28,7 @@ if (isNodeJS) {
             originalRemove.call(process, eventName, listener._asap_wrapper_ || listener);
         });
 
-        asap.onerror = function (error) {
+        asap._throw = function (error) {
             errorsToIgnore.push(error);
             throw error;
         };
