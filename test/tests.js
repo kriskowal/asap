@@ -1,9 +1,9 @@
 "use strict";
 
-var asap = require("..");
+var asap = require("./asap-implementation");
+var domain = require("./domain-implementation");
 var assert = require("assert");
 var _ = require("lodash");
-var domain = require("./domain-implementation");
 
 var MAX_RECURSION = 4000;
 var WAIT_FOR_NORMAL_CASE = 100;
