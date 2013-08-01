@@ -1,5 +1,6 @@
 "use strict";
 
+var asap = require("..");
 var _ = require("lodash");
 
 // This is a reliable test for true Node.js, avoiding false positives for e.g. Browserify's emulation environment.
@@ -27,17 +28,10 @@ if (isNodeJS) {
             originalRemove.call(process, eventName, listener._asap_wrapper_ || listener);
         });
 
-        global.asap = _.wrap(asap, function (originalAsap, task) {
-            originalAsap(function () {
-                try {
-                    task();
-
-                } catch (error) {
-                    errorsToIgnore.push(error);
-                    throw error;
-                }
-            });
-        });
+        asap._throw = function (error) {
+            errorsToIgnore.push(error);
+            throw error;
+        };
 
         afterEach(function () {
             errorsToIgnore = [];

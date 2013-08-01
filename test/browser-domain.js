@@ -1,5 +1,6 @@
 "use strict";
 
+var asap = require("..");
 var _ = require("lodash");
 var EventEmitter = require("events").EventEmitter;
 
@@ -21,20 +22,13 @@ exports.create = function () {
     return activeDomain;
 };
 
-global.asap = _.wrap(asap, function (originalAsap, task) {
-    originalAsap(function () {
-        try {
-            task();
-
-        } catch (error) {
-            if (activeDomain) {
-                activeDomain.emit("error", error);
-            } else {
-                throw error;
-            }
-        }
-    });
-});
+asap._throw = function (error) {
+    if (activeDomain) {
+        activeDomain.emit("error", error);
+    } else {
+        throw error;
+    }
+};
 
 exports.teardown = function () {
     activeDomain = null;
