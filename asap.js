@@ -31,7 +31,14 @@ function flush() {
             task();
 
         } catch (e) {
-            if (isNodeJS) {
+            if (asap.onerror) {
+                // Ensure continuation. Only closing/exiting page/process should
+                // prevent the rest of tasks to be called.
+                requestFlush();
+
+                asap.onerror(e);
+
+            } else if (isNodeJS) {
                 // In node, uncaught exceptions are considered fatal errors.
                 // Re-throw them to interrupt flushing!
 
@@ -39,22 +46,14 @@ function flush() {
                 // listening process.on("uncaughtException") or domain("error").
                 requestFlush();
 
-                if (asap.onerror) {
-                    asap.onerror(e);
-                    return;
-                } else {
-                    throw e;
-                }
+                throw e;
+
             } else {
                 // In browsers, uncaught exceptions are not fatal.
                 // Re-throw them asynchronously to avoid slow-downs.
-                if (asap.onerror) {
-                    asap.onerror(e);
-                } else {
-                    setTimeout(function () {
-                        throw e;
-                    }, 0);
-                }
+                setTimeout(function () {
+                    throw e;
+                }, 0);
             }
         }
     }
