@@ -13,13 +13,15 @@
     },
     "main": "asap",
     "scripts": {
-        "pretest": "browserify asap.js -s asap -o build.js",
-        "test": "mocha -s 200 test/test.js"
+        "node-test": "mocha test/tests.js",
+        "phantomjs-test": "zuul test/tests.js",
+        "browser-test": "zuul --server 8080 test/tests.js",
+        "test": "npm run node-test && npm run phantomjs-test"
     },
     "devDependencies": {
-        "browserify": "2.x.x",
-        "mocha": "1.x.x",
-        "expect.js": "0.2.x"
+        "zuul": "0.0.8",
+        "mocha": "1.12.x",
+        "lodash": "1.3.1"
     },
     "testling": {
         "browsers": [
@@ -32,6 +34,6 @@
             "ipad/6"
         ],
         "harness": "mocha",
-        "files": "test/test.js"
+        "files": "test/tests.js"
     }
 }
