@@ -1,5 +1,7 @@
 # ASAP
 
+[![Build Status](https://travis-ci.org/kriskowal/asap.png?branch=master)](https://travis-ci.org/kriskowal/asap)
+
 This `asap` CommonJS package contains a single `asap` module that
 exports a single `asap` function that executes a function **as soon as
 possible**.
@@ -49,7 +51,7 @@ In browsers, if a task throws an exception, it will not interrupt the flushing
 of high-priority tasks. The exception will be postponed to a later,
 low-priority event to avoid slow-downs.
 In NodeJS, on the other hand, if a task throws an exception, ASAP will
-resume flushing only if—and only after—the error is handled by 
+resume flushing only if—and only after—the error is handled by
 `domain.on("error")` or `process.on("uncaughtException")`.
 
 ## Heritage
