@@ -86,9 +86,21 @@ if (isNodeJS) {
     // modern browsers
     // http://www.nonblocking.io/2011/06/windownexttick.html
     var channel = new MessageChannel();
-    channel.port1.onmessage = flush;
-    requestFlush = function () {
+    // At least Safari Version 6.0.5 (8536.30.1) intermittently cannot create
+    // working message ports the first time a page loads.
+    channel.port1.onmessage = function () {
+        requestFlush = requestPortFlush;
+        channel.port1.onmessage = flush;
+        flush();
+    };
+    var requestPortFlush = function () {
+        // Opera requires us to provide a message payload, regardless of
+        // whether we use it.
         channel.port2.postMessage(0);
+    };
+    requestFlush = function () {
+        setTimeout(flush, 0);
+        requestPortFlush();
     };
 
 } else {
