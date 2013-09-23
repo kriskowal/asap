@@ -85,14 +85,6 @@ if (isNodeJS) {
     element = document.createElement("div");
     observer.observe(element, {attributes: true});
 
-    // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
-    if (global.addEventListener) {
-        global.addEventListener("unload", function () {
-            observer.disconnect();
-            observer = null;
-        }, false);
-    }
-
     requestFlush = function () {
         element.setAttribute("asap-requestFlush", "requestFlush");
     };
