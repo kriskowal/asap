@@ -7,9 +7,13 @@
 var head = {task: void 0, next: null};
 var tail = head;
 var flushing = false;
-var requestFlush = void 0;
+var requestFlush;
 var hasSetImmediate = typeof setImmediate === "function";
+var MutationObserver;
 var domain;
+var observer;
+var element;
+var channel;
 
 // Avoid shims from browserify.
 // The existence of `global` in browsers is guaranteed by browserify.
@@ -76,31 +80,44 @@ if (isNodeJS) {
         }
     };
 
+} else if ((MutationObserver = global.MutationObserver || global.WebKitMutationObserver)) {
+    observer = new MutationObserver(flush);
+    element = document.createElement("div");
+    observer.observe(element, {attributes: true});
+
+    // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
+    if (global.addEventListener) {
+        global.addEventListener("unload", function () {
+            observer.disconnect();
+            observer = null;
+        }, false);
+    }
+
+    requestFlush = function () {
+        element.setAttribute("asap-requestFlush", "requestFlush");
+    };
+
 } else if (hasSetImmediate) {
     // In IE10, or https://github.com/NobleJS/setImmediate
     requestFlush = function () {
         setImmediate(flush);
+        // IE bug - https://github.com/kriskowal/asap/issues/21
+        setTimeout(flush, 0);
     };
 
 } else if (typeof MessageChannel !== "undefined") {
     // modern browsers
     // http://www.nonblocking.io/2011/06/windownexttick.html
-    var channel = new MessageChannel();
-    // At least Safari Version 6.0.5 (8536.30.1) intermittently cannot create
-    // working message ports the first time a page loads.
-    channel.port1.onmessage = function () {
-        requestFlush = requestPortFlush;
-        channel.port1.onmessage = flush;
-        flush();
-    };
-    var requestPortFlush = function () {
+    channel = new MessageChannel();
+    channel.port1.onmessage = flush;
+    requestFlush = function () {
         // Opera requires us to provide a message payload, regardless of
         // whether we use it.
         channel.port2.postMessage(0);
-    };
-    requestFlush = function () {
+        // IE bug - https://github.com/kriskowal/asap/issues/21
+        // At least Safari Version 6.0.5 (8536.30.1) intermittently cannot create
+        // working message ports the first time a page loads.
         setTimeout(flush, 0);
-        requestPortFlush();
     };
 
 } else {
