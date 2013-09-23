@@ -11,7 +11,6 @@ var requestFlush;
 var hasSetImmediate = typeof setImmediate === "function";
 var MutationObserver;
 var domain;
-var observer;
 var element;
 var channel;
 
@@ -81,9 +80,8 @@ if (isNodeJS) {
     };
 
 } else if ((MutationObserver = global.MutationObserver || global.WebKitMutationObserver)) {
-    observer = new MutationObserver(flush);
     element = document.createElement("div");
-    observer.observe(element, {attributes: true});
+    new MutationObserver(flush).observe(element, {attributes: true});
 
     requestFlush = function () {
         element.setAttribute("asap-requestFlush", "requestFlush");
