@@ -3,16 +3,9 @@
 // Use the fastest possible means to execute a task in a future turn
 // of the event loop.
 
-// Queue is a circular buffer with good locality of reference and doesn't
-// allocate new memory unless there are more than 1024 parallel
-// tasks in which case it will resize itself generously to x8 more
-// capacity. The use case of asap should require no or few
-// amount of resizes during runtime.
-
-// Calling a task frees a slot immediately so if the calling
-// has a side effect of queuing itself again, it can be sustained
-// without additional memory
+//See queue.js for explanation
 var Queue = require("./queue");
+//1024 = InitialCapacity
 var queue = new Queue(1024);
 var flushing = false;
 var requestFlush = void 0;
