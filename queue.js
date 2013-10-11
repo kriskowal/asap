@@ -1,5 +1,14 @@
 "use strict";
 
+//This solution is specifically using
+//http://en.wikipedia.org/wiki/Circular_buffer#Use_a_Fill_Count
+//Because:
+//1. We need fast .length() operation, since queue
+//  could have changed after every iteration
+//2. Modulus can be negated by using power-of-two
+//  capacities and replacing it with bitwise AND
+//3. It will not be used in a multi-threaded situation.
+
 var DEQUE_MAX_CAPACITY = (1 << 30) | 0;
 var DEQUE_MIN_CAPACITY = 16;
 
