@@ -28,15 +28,14 @@ function getCapacity(capacity) {
     );
 }
 
-function Deque(capacity) {
+function Queue(capacity) {
     this._capacity = getCapacity(capacity);
     this._length = 0;
     this._front = 0;
     this._makeCapacity();
 }
-var method = Deque.prototype;
 
-method.push = function (item) {
+Queue.prototype.push = function (item) {
     var length = this.length();
     this._checkCapacity(length + 1);
     var i = (this._front + length) & (this._capacity - 1);
@@ -44,7 +43,7 @@ method.push = function (item) {
     this._length = length + 1;
 };
 
-method.shift = function () {
+Queue.prototype.shift = function () {
     var front = this._front,
         ret = this[front];
 
@@ -55,24 +54,24 @@ method.shift = function () {
 };
 
 
-method.length = function () {
+Queue.prototype.length = function () {
     return this._length;
 };
 
-method._makeCapacity = function () {
+Queue.prototype._makeCapacity = function () {
     var len = this._capacity;
     for (var i = 0; i < len; ++i) {
         this[i] = void 0;
     }
 };
 
-method._checkCapacity = function (size) {
+Queue.prototype._checkCapacity = function (size) {
     if (this._capacity < size) {
         this._resizeTo(this._capacity * 8);
     }
 };
 
-method._resizeTo = function (capacity) {
+Queue.prototype._resizeTo = function (capacity) {
     var oldFront = this._front;
     var oldCapacity = this._capacity;
     var oldQueue = new Array(oldCapacity);
@@ -96,4 +95,4 @@ method._resizeTo = function (capacity) {
     }
 };
 
-module.exports = Deque;
+module.exports = Queue;
