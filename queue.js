@@ -1,5 +1,15 @@
 "use strict";
 
+// Queue is a circular buffer with good locality of reference and doesn't
+// allocate new memory unless there are more than [InitialCapacity] parallel
+// tasks in which case it will resize itself generously to x8 more
+// capacity. The use case of asap should require no or few
+// amount of resizes during runtime.
+
+// Calling a task frees a slot immediately so if the calling
+// has a side effect of queuing itself again, it can be sustained
+// without additional memory
+
 //This solution is specifically using
 //http://en.wikipedia.org/wiki/Circular_buffer#Use_a_Fill_Count
 //Because:
@@ -76,7 +86,7 @@ Queue.prototype._makeCapacity = function () {
 
 Queue.prototype._checkCapacity = function (size) {
     if (this._capacity < size) {
-        this._resizeTo(this._capacity * 8);
+        this._resizeTo(getCapacity(this._capacity * 8));
     }
 };
 
