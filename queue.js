@@ -1,14 +1,14 @@
 "use strict";
 
-// Queue is a circular buffer with good locality of reference and doesn't
-// allocate new memory unless there are more than [InitialCapacity] parallel
-// tasks in which case it will resize itself generously to x8 more
-// capacity. The use case of asap should require no or few
-// amount of resizes during runtime.
+//Queue is a circular buffer with good locality of reference and doesn't
+//allocate new memory unless there are more than [InitialCapacity] parallel
+//tasks in which case it will resize itself generously to x8 more
+//capacity. The use case of asap should require no or few
+//amount of resizes during runtime.
 
-// Calling a task frees a slot immediately so if the calling
-// has a side effect of queuing itself again, it can be sustained
-// without additional memory
+//Calling a task frees a slot immediately so if the calling
+//has a side effect of queuing itself again, it can be sustained
+//without additional memory
 
 //This solution is specifically using
 //http://en.wikipedia.org/wiki/Circular_buffer#Use_a_Fill_Count
@@ -19,8 +19,8 @@
 //  capacities and replacing it with bitwise AND
 //3. It will not be used in a multi-threaded situation.
 
-var DEQUE_MAX_CAPACITY = (1 << 30) | 0;
-var DEQUE_MIN_CAPACITY = 16;
+var QUEUE_MAX_CAPACITY = (1 << 30) | 0;
+var QUEUE_MIN_CAPACITY = 16;
 
 function arrayCopy(src, srcIndex, dst, dstIndex, len) {
     for (var j = 0; j < len; ++j) {
@@ -40,10 +40,12 @@ function pow2AtLeast(n) {
 }
 
 function getCapacity(capacity) {
-    if (typeof capacity !== "number") return DEQUE_MIN_CAPACITY;
+    if (typeof capacity !== "number") {
+        return QUEUE_MIN_CAPACITY;
+    }
     return pow2AtLeast(
         Math.min(
-            Math.max(DEQUE_MIN_CAPACITY, capacity), DEQUE_MAX_CAPACITY)
+            Math.max(QUEUE_MIN_CAPACITY, capacity), QUEUE_MAX_CAPACITY)
     );
 }
 
@@ -63,8 +65,8 @@ Queue.prototype.push = function (item) {
 };
 
 Queue.prototype.shift = function () {
-    var front = this._front,
-        ret = this[front];
+    var front = this._front;
+    var ret = this[front];
 
     this[front] = void 0;
     this._front = (front + 1) & (this._capacity - 1);
