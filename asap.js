@@ -3,9 +3,10 @@
 // Use the fastest possible means to execute a task in a future turn
 // of the event loop.
 
-// linked list of tasks (single, with head node)
-var head = {task: void 0, next: null};
-var tail = head;
+//See queue.js for explanation
+var Queue = require("./queue");
+//1024 = InitialCapacity
+var queue = new Queue(1024);
 var flushing = false;
 var requestFlush = void 0;
 var hasSetImmediate = typeof setImmediate === "function";
@@ -22,10 +23,8 @@ var isNodeJS = !!process && ({}).toString.call(process) === "[object process]";
 function flush() {
     /* jshint loopfunc: true */
 
-    while (head.next) {
-        head = head.next;
-        var task = head.task;
-        head.task = void 0;
+    while (queue.length() > 0) {
+        var task = queue.shift();
 
         try {
             task();
@@ -115,7 +114,7 @@ function asap(task) {
         task = process.domain.bind(task);
     }
 
-    tail = tail.next = {task: task, next: null};
+    queue.push(task);
 
     if (!flushing) {
         requestFlush();
@@ -124,3 +123,4 @@ function asap(task) {
 };
 
 module.exports = asap;
+
