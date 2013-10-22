@@ -12,19 +12,35 @@ asap(function () {
 });
 ```
 
-More formally, ASAP provides a fast event queue that will execute tasks
-until it is empty before yielding to the JavaScript engine's underlying
-event-loop. When the event queue becomes non-empty, ASAP schedules a
-flush event, preferring for that event to occur before the JavaScript
-engine has an opportunity to perform IO tasks or rendering, thus making
-the first task and subsequent tasks semantically indistinguishable.
-ASAP uses a variety of techniques to preserve this invariant on
-different versions of browsers and NodeJS.
+ASAP strives to schedule events to occur before yielding for IO, reflow,
+or redrawing.  Each event receives an independent stack, with only
+platform code in parent frames and the events run in the order they are
+scheduled.
 
-By design, ASAP can starve the event loop on the theory that, if there
-is enough work to be done synchronously, albeit in separate events, long
-enough to starve input or output, it is a strong indicator that the
-program needs to push back on scheduling more work.
+ASAP provides a fast event queue that will execute tasks until it is
+empty before yielding to the JavaScript engine's underlying event-loop.
+When the event queue becomes non-empty, ASAP schedules a flush event,
+preferring for that event to occur before the JavaScript engine has an
+opportunity to perform IO tasks or rendering, thus making the first task
+and subsequent tasks semantically indistinguishable.  ASAP uses a
+variety of techniques to preserve this invariant on different versions
+of browsers and Node.js.
+
+By design, ASAP prevents input events from being handled until the task
+queue is empty.  If the process is busy engouh, this may cause incoming
+connection requests to be dropped, and may cause existing connections to
+inform the sender to reduce the transmission rate or stall.  ASAP allows
+this on the theory that, if there is enough work to do, there is no
+sense in looking for trouble.  As a consequence, however, ASAP can
+interrupt smooth animation, popularly dubbed “jank”.  If your task can
+wait for reflow or rendering, consider using ASAP’s cousin
+`setImmediate` instead.
+
+`setImmediate` will yield for IO, reflow, and repaint events.  It also
+returns a handler and can be canceled.  For a `setImmediate` shim,
+consider [setImmediate][].
+
+[setImmediate]: https://github.com/noblejs/setimmediate
 
 Take care. ASAP can sustain infinite recursive calls indefinitely
 without warning. This is behaviorally equivalent to an infinite loop.
@@ -40,12 +56,6 @@ function loop() {
 }
 loop();
 ```
-
-ASAP is distinct from `setImmediate` in that it does not suffer the
-overhead of returning a handle and being possible to cancel. For a
-`setImmediate` shim, consider [setImmediate][].
-
-[setImmediate]: https://github.com/noblejs/setimmediate
 
 In browsers, if a task throws an exception, it will not interrupt the flushing
 of high-priority tasks. The exception will be postponed to a later,
