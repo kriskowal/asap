@@ -9,5 +9,5 @@
 	license: "MIT",
 	scripts: [
 		"asap.js"
-	],
+	]
 }
