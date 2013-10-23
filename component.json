@@ -1,13 +1,13 @@
 {
-	name: "asap",
-	repo: "johntron/asap",
-	description: "High-priority task queue for Node.js and browsers",
-	version: "1.0.0",
-	keywords: ["event", "task", "queue"],
-	dependencies: { },
-	development: { },
-	license: "MIT",
-	scripts: [
+	"name": "asap",
+	"repo": "johntron/asap",
+	"description": "High-priority task queue for Node.js and browsers",
+	"version": "1.0.0",
+	"keywords": ["event", "task", "queue"],
+	"dependencies": { },
+	"development": { },
+	"license": "MIT",
+	"scripts": [
 		"asap.js"
 	]
 }
