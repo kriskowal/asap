@@ -1,6 +1,6 @@
 {
 	"name": "asap",
-	"repo": "kriskowal/asap",
+	"repo": "johntron/asap",
 	"description": "High-priority task queue for Node.js and browsers",
 	"version": "1.0.0",
 	"keywords": ["event", "task", "queue"],
