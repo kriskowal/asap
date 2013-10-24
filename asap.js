@@ -11,9 +11,11 @@ var requestFlush = void 0;
 var hasSetImmediate = typeof setImmediate === "function";
 var domain;
 
-// Avoid shims from browserify.
-// The existence of `global` in browsers is guaranteed by browserify.
-var process = global.process;
+if (global !== undefined) {
+	// Avoid shims from browserify.
+	// The existence of `global` in browsers is guaranteed by browserify.
+	var process = global.process;
+}
 
 // Note that some fake-Node environments,
 // like the Mocha test runner, introduce a `process` global.
