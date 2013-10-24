@@ -7,6 +7,7 @@
 	"dependencies": { },
 	"development": { },
 	"license": "MIT",
+	"main": "asap.js",
 	"scripts": [
 		"asap.js"
 	]
