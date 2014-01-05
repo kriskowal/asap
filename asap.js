@@ -28,7 +28,7 @@ function flush() {
         head.task = void 0;
 
         try {
-            task();
+            task.call();
 
         } catch (e) {
             if (isNodeJS) {
