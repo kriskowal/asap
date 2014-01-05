@@ -3,8 +3,25 @@
 // Use the fastest possible means to execute a task in a future turn
 // of the event loop.
 
-//See queue.js for explanation
+// Queue is a circular buffer with good locality of reference and doesn't
+// allocate new memory unless there are more than `InitialCapacity` parallel
+// tasks in which case it will resize itself generously to x8 more capacity.
+// The use case of asap should require no or few amount of resizes during
+// runtime.
+// Calling a task frees a slot immediately so if the calling
+// has a side effect of queuing itself again, it can be sustained
+// without additional memory
+// Queue specifically uses
+// http://en.wikipedia.org/wiki/Circular_buffer#Use_a_Fill_Count
+// Because:
+// 1. We need fast .length operation, since queue
+//   could have changed after every iteration
+// 2. Modulus can be negated by using power-of-two
+//   capacities and replacing it with bitwise AND
+// 3. It will not be used in a multi-threaded situation.
+
 var Queue = require("./queue");
+
 //1024 = InitialCapacity
 var queue = new Queue(1024);
 var flushing = false;
@@ -23,7 +40,7 @@ var isNodeJS = !!process && ({}).toString.call(process) === "[object process]";
 function flush() {
     /* jshint loopfunc: true */
 
-    while (queue.length() > 0) {
+    while (queue.length > 0) {
         var task = queue.shift();
 
         try {
