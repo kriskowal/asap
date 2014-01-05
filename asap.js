@@ -27,7 +27,7 @@ function flush() {
         var task = queue.shift();
 
         try {
-            task();
+            task.call();
 
         } catch (e) {
             if (isNodeJS) {
