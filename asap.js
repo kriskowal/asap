@@ -11,7 +11,8 @@ var requestFlush;
 var hasSetImmediate = typeof setImmediate === "function";
 var MutationObserver;
 var domain;
-var element;
+var textNode;
+var textNodeData = 1;
 var channel;
 
 // Avoid shims from browserify.
@@ -80,11 +81,11 @@ if (isNodeJS) {
     };
 
 } else if ((MutationObserver = global.MutationObserver || global.WebKitMutationObserver)) {
-    element = document.createElement("div");
-    new MutationObserver(flush).observe(element, {attributes: true});
+    textNode = document.createTextNode('');
+    new MutationObserver(flush).observe(textNode, {characterData: true});
 
     requestFlush = function () {
-        element.setAttribute("asap-requestFlush", "requestFlush");
+        textNode.data = (textNodeData = -textNodeData);
     };
 
 } else if (hasSetImmediate) {
