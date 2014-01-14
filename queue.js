@@ -72,7 +72,7 @@ Queue.prototype.initialize = function () {
 
 Queue.prototype.snap = function (capacity) {
     if (typeof capacity !== "number") {
-        return QUEUE_MIN_CAPACITY;
+        return this.minCapacity;
     }
     return pow2AtLeast(
         Math.min(this.maxCapacity, Math.max(this.minCapacity, capacity))
