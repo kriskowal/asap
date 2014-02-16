@@ -30,7 +30,8 @@ function rawAsap(task) {
  */
 
 // 1024 = initial capacity
-var queue = [];
+var Queue = require("./queue");
+var queue = new Queue(1024);
 var flushing = false;
 var requestFlush = void 0;
 var hasSetImmediate = typeof setImmediate === "function";
@@ -49,18 +50,11 @@ if (typeof WebKitMutationObserver !== "undefined") {
     BrowserMutationObserver = WebKitMutationObserver;
 }
 
-var index = 0;
 function flush() {
     /* jshint loopfunc: true */
-    while (index < queue.length) {
-        var currentIndex = index;
-        // Advance the index before calling the task. This ensures that we will
-        // begin flushing on the next task the task throws an error.
-        index = index + 1;
-        queue[currentIndex].call();
+    while (queue.length > 0) {
+        queue.shift().call();
     }
-    queue.length = 0;
-    index = 0;
     flushing = false;
 }
 
