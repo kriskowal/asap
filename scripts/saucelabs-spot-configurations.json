@@ -1,0 +1,302 @@
+[
+  {
+    "browserName": "chrome",
+    "platform": "Mac 10.9",
+    "version": "34"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2003",
+    "version": "6"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Mac 10.6",
+    "version": "28"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Windows 2012 R2",
+    "version": "34"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Windows 2012 R2",
+    "version": "26"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Mac 10.6"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Mac 10.9",
+    "version": "31"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Windows 2003",
+    "version": "26"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Windows 2012",
+    "version": "26"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Windows 2012"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Windows 2003"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Windows 2008",
+    "version": "26"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Windows 2008"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Mac 10.8",
+    "version": "27"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Mac 10.8"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Linux",
+    "version": "26"
+  },
+  {
+    "browserName": "chrome",
+    "platform": "Linux"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2012 R2",
+    "version": "11"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012 R2",
+    "version": "3.0"
+  },
+  {
+    "browserName": "ipad",
+    "platform": "Mac 10.6",
+    "version": "4.3"
+  },
+  {
+    "browserName": "ipad",
+    "platform": "Mac 10.6",
+    "version": "5.0"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Mac 10.6",
+    "version": "4"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2008",
+    "version": "9"
+  },
+  {
+    "browserName": "ipad",
+    "platform": "Mac 10.9",
+    "version": "7.0"
+  },
+  {
+    "browserName": "ipad",
+    "platform": "Mac 10.9",
+    "version": "7.1"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Mac 10.9",
+    "version": "4"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Mac 10.9"
+  },
+  {
+    "browserName": "iphone",
+    "platform": "Mac 10.9",
+    "version": "7.0"
+  },
+  {
+    "browserName": "iphone",
+    "platform": "Mac 10.9",
+    "version": "7.1"
+  },
+  {
+    "browserName": "safari",
+    "platform": "Mac 10.9",
+    "version": "7"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2008",
+    "version": "8"
+  },
+  {
+    "browserName": "opera",
+    "platform": "Windows 2003",
+    "version": "11"
+  },
+  {
+    "browserName": "opera",
+    "platform": "Windows 2003",
+    "version": "12"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2003",
+    "version": "8"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2003",
+    "version": "3.0"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2003"
+  },
+  {
+    "browserName": "opera",
+    "platform": "Windows 2008",
+    "version": "11"
+  },
+  {
+    "browserName": "opera",
+    "platform": "Windows 2008",
+    "version": "12"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2008",
+    "version": "10"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2008",
+    "version": "3.0"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2008"
+  },
+  {
+    "browserName": "safari",
+    "platform": "Windows 2008",
+    "version": "5"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2012",
+    "version": "10"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012",
+    "version": "3.0"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2008",
+    "version": "11"
+  },
+  {
+    "browserName": "internet explorer",
+    "platform": "Windows 2003",
+    "version": "7"
+  },
+  {
+    "browserName": "ipad",
+    "platform": "Mac 10.8",
+    "version": "5.1"
+  },
+  {
+    "browserName": "ipad",
+    "platform": "Mac 10.8",
+    "version": "6.0"
+  },
+  {
+    "browserName": "ipad",
+    "platform": "Mac 10.8",
+    "version": "6.1"
+  },
+  {
+    "browserName": "iphone",
+    "platform": "Mac 10.8",
+    "version": "5.1"
+  },
+  {
+    "browserName": "iphone",
+    "platform": "Mac 10.8",
+    "version": "6.0"
+  },
+  {
+    "browserName": "iphone",
+    "platform": "Mac 10.8",
+    "version": "6.1"
+  },
+  {
+    "browserName": "safari",
+    "platform": "Mac 10.8",
+    "version": "6"
+  },
+  {
+    "browserName": "android",
+    "platform": "Linux",
+    "version": "4.0"
+  },
+  {
+    "browserName": "android",
+    "platform": "Linux",
+    "version": "4.1"
+  },
+  {
+    "browserName": "android",
+    "platform": "Linux",
+    "version": "4.2"
+  },
+  {
+    "browserName": "android",
+    "platform": "Linux",
+    "version": "4.3"
+  },
+  {
+    "browserName": "android",
+    "platform": "Linux",
+    "version": "4.0"
+  },
+  {
+    "browserName": "opera",
+    "platform": "Linux",
+    "version": "12"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Linux",
+    "version": "3.6"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Linux",
+    "version": "29"
+  }
+]
