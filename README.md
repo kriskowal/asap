@@ -87,7 +87,33 @@ Case for setImmediate][NCZ].
 
 [NCZ]: http://www.nczonline.net/blog/2013/07/09/the-case-for-setimmediate/
 
+Ember’s RSVP promise implementation later [adopted][RSVP ASAP] the name ASAP but
+revised the implentation. Particularly, The `MessagePort` implementation was
+abandoned due to interaction [problems with Mobile Internet Explorer][IE
+Problems] in favor of an implementation backed on the newer and more reliable
+DOM `MutationObserver` interface. These changes were back ported into this
+library.
+
+[IE Problems]: https://github.com/cujojs/when/issues/197
+[RSVP ASAP]: https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
+
+In addition, ASAP factored into `asap` and `asap/raw`, such that `asap` remained
+exception-safe, but `asap/raw` provided a tight kernel that could be used for
+tasks that guaranteed that they would not throw exceptions.  This core is useful
+for promise implementations that capture thrown errors in rejected promises and
+do not need a second safety net. At the same time, the exception handling in
+`asap` was factored into separate implementations for Node.js and browsers,
+using the the [Browserify][Browser Config] `browser` property in `package.json`
+to instruct browser module loaders and bundlers, including [Browserify][],
+[Mr][], and [Mop][],  to use the browser-only implementation.
+
+[Browser Config]: https://gist.github.com/defunctzombie/4339901
+[Browserify]: https://github.com/substack/node-browserify
+[Mr]: https://github.com/montagejs/mr
+[Mop]: https://github.com/montagejs/mop
+
 ## License
 
-Copyright 2009-2013 by Contributors
+Copyright 2009-2014 by Contributors
 MIT License (enclosed)
+
