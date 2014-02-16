@@ -7,7 +7,7 @@ var _ = require("lodash");
 
 var MAX_RECURSION = 4000;
 var WAIT_FOR_NORMAL_CASE = 100;
-var WAIT_FOR_ERRORS = 1000;
+var WAIT_FOR_ERRORS = 100;
 
 describe("When no tasks throw", function () {
     specify("A single task should run after `asap` returns", function (done) {
