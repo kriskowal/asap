@@ -1,4 +1,5 @@
 
+var FS = require("q-io/fs");
 var ChildProcess = require("child_process");
 var NodeReader = require("q-io/node/reader");
 
@@ -21,30 +22,34 @@ function getAnnotations() {
     return getGitHash("HEAD").then(function (hash) {
         return gitIsClean().then(function (gitIsClean) {
             if (gitIsClean) {
-                return getGitHash("v" + config.version).then(function (vHash) {
-                    var parts = config.version.split(".");
-                    var major = parts[0];
-                    if (hash === vHash) {
-                        return {
-                            type: "release",
-                            tags: ["release", "v" + config.version],
-                            hash: hash,
-                            version: config.version,
-                            build: "v" + config.version,
-                            train: "v" + major,
-                            path: "release/" + config.version + "/",
-                            trainPath: "train/release-" + major + "/"
+                return FS.read("package.json", {charset: "utf-8"})
+                .then(function (configJson) {
+                    var config = JSON.parse(configJson);
+                    return getGitHash("v" + config.version).then(function (vHash) {
+                        var parts = config.version.split(".");
+                        var major = parts[0];
+                        if (hash === vHash) {
+                            return {
+                                type: "release",
+                                tags: ["release", "v" + config.version],
+                                hash: hash,
+                                version: config.version,
+                                build: "v" + config.version,
+                                train: "v" + major,
+                                path: "release/" + config.version + "/",
+                                trainPath: "train/release-" + major + "/"
+                            }
+                        } else {
+                            return {
+                                type: "integration",
+                                tags: ["integration", hash.slice(0, 7)],
+                                hash: hash,
+                                build: hash.slice(0, 7),
+                                path: "integration/" + hash + "/",
+                                trainPath: "train/integration-" + major + "/"
+                            }
                         }
-                    } else {
-                        return {
-                            type: "integration",
-                            tags: ["integration", hash.slice(0, 7)],
-                            hash: hash,
-                            build: hash.slice(0, 7),
-                            path: "integration/" + hash + "/",
-                            trainPath: "train/integration-" + major + "/"
-                        }
-                    }
+                    });
                 });
             } else {
                 var nonce = Math.random().toString(36).slice(2, 7);
