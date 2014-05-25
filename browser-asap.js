@@ -1,7 +1,11 @@
 "use strict";
 
+// rawAsap provides everything we need except exception management.
 var rawAsap = require("./raw");
+// RawTasks are recycled to reduce GC churn.
 var freeTasks = [];
+// You're not going to believe this.
+var hasSetImmediate = typeof setImmediate === "function";
 
 /**
  * Calls a task as soon as possible after returning, in its own event, with priority
@@ -29,6 +33,7 @@ function RawTask() {
     this.task = null;
 }
 
+
 // The sole purpose of wrapping the task is to catch the exception and recycle
 // the task object after its single use.
 RawTask.prototype.call = function () {
@@ -39,9 +44,19 @@ RawTask.prototype.call = function () {
             // This hook exists purely for testing purposes.
             // Its name will be periodically randomized to break any code that
             // depends on its existence.
-            setTimeout(function () {
-                asap.onerror(error);
-            }, 0);
+            asap.onerror(error);
+        } else if (hasSetImmediate) {
+            // In WebWorkers on Internet Explorer 10 and 11, the setTimeout
+            // function is not FIFO.
+            // Thankfully these browsers have setImmediate, which behaves
+            // correctly.
+            // In all other known cases, setTimeout is FIFO, including non
+            // Worker contexts in the exact same browsers.
+            // Note that in Internet Explorer 10, setImmediate must be called
+            // by name.
+            setImmediate(function () {
+                throw error;
+            });
         } else {
             // In a web browser, exceptions are not fatal. However, to avoid
             // slowing down the queue of pending tasks, we rethrow the error in a

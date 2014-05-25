@@ -10,6 +10,7 @@ var webdriver = require("wd");
 var publishBundle = require("./publish-bundle");
 var getAnnotations = require("./annotations");
 var getCredentials = require("./credentials");
+var captureSaucelabsMatrix = require("./saucelabs-matrix");
 
 module.exports = run;
 function run(location, annotations, configurationsPath, credentialsPath, timeout) {
@@ -139,18 +140,6 @@ function poll(callback, ms) {
     })
 }
 
-function captureMatrix(credentials, annotations) {
-    var s3 = new S3({
-        bucket: credentials.S3_BUCKET,
-        key: credentials.S3_ACCESS_KEY_ID,
-        secret: credentials.S3_ACCESS_KEY
-    });
-    return HTTP.read("https://saucelabs.com/browser-matrix/kriskowal-asap.svg")
-    .then(function (content) {
-        return s3.put(URL.resolve(annotations.trainPath, "saucelabs-matrix.svg"), content, "image/svg+xml");
-    });
-}
-
 function main() {
     return Q([
         getCredentials(),
@@ -163,7 +152,7 @@ function main() {
             return run(location, annotations, process.argv[3])
         })
         .then(function (results) {
-            return captureMatrix(credentials, annotations)
+            return captureSaucelabsMatrix(credentials, annotations)
             .thenResolve(results);
         });
     })

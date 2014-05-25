@@ -35,6 +35,11 @@ function run() {
         global.global_test_results = {
             passed: !failed
         };
+        if (global.postMessage) {
+            global.postMessage({
+                passed: !failed
+            });
+        }
         if (typeof process !== "undefined") {
             process.exit(failed ? -1 : 0);
         }
@@ -83,7 +88,7 @@ Expectation.prototype.toBe = function (value) {
     var ok = this.value === value;
     if (!ok) {
         this.test.failed = true;
-        console.log("Expected", value, "to be", this.value);
+        console.log("Expected " + this.value + " to be " + value);
     }
 };
 
@@ -91,7 +96,7 @@ Expectation.prototype.toEqual = function (value) {
     var ok = equals(this.value, value);
     if (!ok) {
         this.test.failed = true;
-        console.log("Expected", value, "to equal", this.value);
+        console.log("Expected", this.value, "to equal", value);
     }
 };
 

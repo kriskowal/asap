@@ -6,7 +6,7 @@ var rawAsap = require("../raw");
 var domain = require("./domain");
 
 var MAX_RECURSION = 10;
-var WAIT_FOR_NORMAL_CASE = 0;
+var WAIT_FOR_NORMAL_CASE = 100;
 var WAIT_FOR_ERRORS = 100;
 
 describeAsap("rawAsap", rawAsap);
