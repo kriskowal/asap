@@ -21,9 +21,20 @@ function rawAsap(task) {
 }
 
 var queue = [];
+// Once a flush has been requested, no further calls to `requestFlush` are
+// necessary until the next `flush` completes.
 var flushing = false;
+// `requestFlush` is an implementation-specific method that attempts to kick
+// off a `flush` event as quickly as possible. `flush` will attempt to exhaust
+// the event queue before yielding to the browser's own event loop.
 var requestFlush;
+// The position of the next task to execute in the task queue. This is
+// preserved between calls to `flush` so that it can be resumed if
+// a task throws an exception.
 var index = 0;
+// If a task schedules additional tasks recursively, the task queue can grown
+// unbounded. To prevent memory excaustion, the task queue will periodically
+// truncate already-completed tasks.
 var capacity = 1024;
 
 // The flush function processes all tasks that have been scheduled with
@@ -62,47 +73,52 @@ var BrowserMutationObserver = global.MutationObserver || global.WebKitMutationOb
 
 // MutationObservers are desirable because they have high priority and work
 // reliably everywhere they are implemented.
+// They are implemented in all modern browsers.
+//
+// - Android 4-4.3
+// - Chrome 26-34
+// - Firefox 14-29
+// - Internet Explorer 11
+// - iPad Safari 6-7.1
+// - iPhone Safari 7-7.1
+// - Safari 6-7
 if (typeof BrowserMutationObserver === "function") {
-    // Modern browsers
-    // Android 4-4.3
-    // Chrome 26-34
-    // Firefox 14-29
-    // Internet Explorer 11
-    // iPad Safari 6-7.1
-    // iPhone Safari 7-7.1
-    // Safari 6-7
     requestFlush = makeRequestFlushFromMutationObserver();
-} else if (
-    typeof importScripts === "function" &&
-    typeof MessageChannel === "function"
-) {
-    // Mutation observers are not available in web workers since there is no
-    // DOM in that context. Message ports are guaranteed to be available, but
-    // don't always work reliably in Safari or Internet Explorer 10.
-    // However, if message ports don't work reliably for you, the worker is
-    // going to have trouble communicating, so we take a calculated risk and
-    // use the message channel to emit high priority events.
-    requestFlush = makeRequestFlushFromMessageChannel();
+
+// MessageChannels are desirable because they also have high priority, and
+// are implemented in Internet Explorer 10, Safari 5.0-1, and Opera 11-12,
+// but also because MutationObservers are not available in web workers.
+// However, they do not work reliably in Internet Explorer or Safari.
+
+// Internet Explorer 10 is the only browser that has setImmediate but does
+// not have MutationObservers. We use `setImmediate` in IE 10 for both
+// windows and workers.
 } else if (typeof setImmediate === "function") {
-    // Internet Explorer 10 is the only browser that has setImmediate but does
-    // not have MutationObservers. We use `setImmediate` in IE 10 for both
-    // windows and workers.
     requestFlush = makeRequestFlushFromSetImmediate();
+
+// Timers are implemented universally.
+// We fall back to timers in workers in most engines, and in foreground
+// contexts in the following browsers.
+// However, note that even this simple case requires nuances to operate in a
+// broad spectrum of browsers.
+//
+// - Firefox 3-13
+// - Internet Explorer 6-9
+// - iPad Safari 4.3
+// - Lynx 2.8.7
 } else {
-    // Erstwhile engines
-    // Firefox 3-13
-    // Internet Explorer 6-9
-    // iPad Safari 4.3
-    // Lynx 2.8.7
-    requestFlush = makeRequestFlushFromSetTimeout();
+    requestFlush = makeRequestFlushFromTimer();
 }
 
-// Requests that the high priority event queue be flushed as soon as possible.
+// `requestFlush` requests that the high priority event queue be flushed as
+// soon as possible.
 // This is useful to prevent an error thrown in a task from stalling the event
 // queue if the exception handled by Node.js’s
 // `process.on("uncaughtException")` or by a domain.
 rawAsap.requestFlush = requestFlush;
 
+// To request a high priority event, we induce a mutation observer by toggling
+// the text of a text node between "1" and "-1".
 function makeRequestFlushFromMutationObserver() {
     var toggle = 1;
     var observer = new BrowserMutationObserver(flush);
@@ -122,18 +138,13 @@ function makeRequestFlushFromMutationObserver() {
 // page's first load. Thankfully, this version of Safari supports
 // MutationObservers, so we don't need to fall back in that case.
 
-// However, MessageChannel is the only known high priority event queue
-// available in web workers, and exists in every browser that implements web
-// workers. If message channels don't work in web workers, even in Safari,
-// your program will have bigger problems than ASAP.
-
-function makeRequestFlushFromMessageChannel() {
-    var channel = new MessageChannel();
-    channel.port1.onmessage = flush;
-    return function requestFlush() {
-        channel.port2.postMessage(0);
-    };
-}
+// function makeRequestFlushFromMessageChannel() {
+//     var channel = new MessageChannel();
+//     channel.port1.onmessage = flush;
+//     return function requestFlush() {
+//         channel.port2.postMessage(0);
+//     };
+// }
 
 // Internet Explorer 10 does not support `MutationObserver`, but does support
 // `setImmediate`. However, there is a bug in Internet Explorer 10. It is not
@@ -151,9 +162,27 @@ function makeRequestFlushFromSetImmediate() {
 // mutation observers, so that implementation is used instead.
 // We elected not to add a "scroll" event listener to force a flush.
 
-function makeRequestFlushFromSetTimeout() {
+// `setTimeout` does not appear to work with a delay less than approximately 7
+// in web workers in Firefox 8 through 18, and sometimes not even then.
+
+function makeRequestFlushFromTimer() {
     return function requestFlush() {
-        setTimeout(flush, 0);
+        // We dispatch a timeout with a specified delay of 0 for engines that
+        // can reliably accommodate that request. This will usually be snapped
+        // to a 4 milisecond delay, but once we're flushing, there's no delay
+        // between events.
+        var timeoutHandle = setTimeout(handleFlushTimer, 0);
+        // However, since this timer gets frequently dropped in Firefox
+        // workers, we enlist an interval handle that will try to fire
+        // an event 20 times per second until it succeeds.
+        var intervalHandle = setInterval(handleFlushTimer, 50);
+        function handleFlushTimer() {
+            // Whichever timer succeeds will cancel both timers and request the
+            // flush.
+            clearTimeout(timeoutHandle);
+            clearInterval(intervalHandle);
+            flush();
+        }
     };
 }
 

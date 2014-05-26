@@ -12,36 +12,6 @@
   {
     "browserName": "firefox",
     "platform": "Windows 2012 R2",
-    "version": "3.5"
-  },
-  {
-    "browserName": "firefox",
-    "platform": "Windows 2012 R2",
-    "version": "3.6"
-  },
-  {
-    "browserName": "firefox",
-    "platform": "Windows 2012 R2",
-    "version": "4"
-  },
-  {
-    "browserName": "firefox",
-    "platform": "Windows 2012 R2",
-    "version": "5"
-  },
-  {
-    "browserName": "firefox",
-    "platform": "Windows 2012 R2",
-    "version": "6"
-  },
-  {
-    "browserName": "firefox",
-    "platform": "Windows 2012 R2",
-    "version": "7"
-  },
-  {
-    "browserName": "firefox",
-    "platform": "Windows 2012 R2",
     "version": "8"
   },
   {
@@ -93,6 +63,36 @@
     "browserName": "firefox",
     "platform": "Windows 2012 R2",
     "version": "18"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012 R2",
+    "version": "3.5"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012 R2",
+    "version": "3.6"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012 R2",
+    "version": "4"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012 R2",
+    "version": "5"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012 R2",
+    "version": "6"
+  },
+  {
+    "browserName": "firefox",
+    "platform": "Windows 2012 R2",
+    "version": "7"
   },
   {
     "browserName": "firefox",

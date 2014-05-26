@@ -33,7 +33,6 @@ function RawTask() {
     this.task = null;
 }
 
-
 // The sole purpose of wrapping the task is to catch the exception and recycle
 // the task object after its single use.
 RawTask.prototype.call = function () {

@@ -12,7 +12,7 @@ var passed = 0;
 var failed = 0;
 
 // Test declaration is synchronous.
-setTimeout(run);
+setTimeout(run, 0);
 
 function run() {
     var index = 0;

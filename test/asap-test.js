@@ -9,6 +9,12 @@ var MAX_RECURSION = 10;
 var WAIT_FOR_NORMAL_CASE = 100;
 var WAIT_FOR_ERRORS = 100;
 
+if (typeof process === "undefined" && typeof window === "undefined") {
+    // give web workers a chance
+    WAIT_FOR_NORMAL_CASE = 1000;
+    WAIT_FOR_ERRORS = 1000;
+}
+
 describeAsap("rawAsap", rawAsap);
 describeAsap("asap", asap);
 
