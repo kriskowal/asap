@@ -14,12 +14,6 @@
     "unused": true,
 
     "globals": {
-        "bootstrap": false,
-        "cajaVM": false,
-        "define": false,
-        "ReturnValue": false,
-        "ses": false,
-        "setImmediate": false,
-        "Q": true
+        "setImmediate": false
     }
 }
