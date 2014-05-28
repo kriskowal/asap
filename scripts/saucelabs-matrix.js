@@ -1,3 +1,4 @@
+"use strict";
 
 var URL = require("url");
 var HTTP = require("q-io/http");

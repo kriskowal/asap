@@ -1,6 +1,7 @@
 {
     "browser": true,
     "node": true,
+    "globalstrict": true,
 
     "curly": true,
     "eqeqeq": true,
@@ -12,8 +13,11 @@
     "trailing": true,
     "undef": true,
     "unused": true,
+    "loopfunc": true,
 
     "globals": {
-        "setImmediate": false
+        "setImmediate": false,
+        "performance": false,
+        "URL": true
     }
 }

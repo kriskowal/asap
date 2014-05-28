@@ -1,3 +1,4 @@
+"use strict";
 
 var Q = require("q");
 var FS = require("q-io/fs");
@@ -19,7 +20,7 @@ function publishWorkerTest() {
             key: credentials.S3_ACCESS_KEY_ID,
             secret: credentials.S3_ACCESS_KEY
         });
-        var workerScript = new Buffer(workerScript, "utf-8");
+        workerScript = new Buffer(workerScript, "utf-8");
         var page = new Buffer("<body><script src=\"test.js\"></script></body>");
         return Q.all([
             s3.put(URL.resolve(targetPath, "test.js"), testScript, "application/javascript"),

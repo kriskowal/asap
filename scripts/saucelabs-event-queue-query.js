@@ -1,3 +1,4 @@
+"use strict";
 
 // This script asks every available Saucelabs Web Driver configuration which
 // event queue flush request methods are available.

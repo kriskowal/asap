@@ -1,9 +1,7 @@
+"use strict";
 
 var Q = require("q");
 var FS = require("q-io/fs");
-var HTTP = require("q-io/http");
-var URL = require("url");
-var S3 = require("./s3");
 var Reader = require("q-io/reader");
 var SauceLabs = require("saucelabs");
 var webdriver = require("wd");
@@ -23,11 +21,6 @@ function run(location, annotations, configurationsPath, credentialsPath, timeout
             username: credentials.SAUCE_USERNAME,
             password: credentials.SAUCE_ACCESS_KEY
         }));
-        var s3 = new S3({
-            bucket: credentials.S3_BUCKET,
-            key: credentials.S3_ACCESS_KEY_ID,
-            secret: credentials.S3_ACCESS_KEY
-        });
         return Reader(configurations)
         .map(function (configuration) {
             return runConfiguration(
@@ -55,7 +48,7 @@ function run(location, annotations, configurationsPath, credentialsPath, timeout
                 };
             });
         }, null, 1)
-        .all()
+        .all();
     });
 }
 
@@ -73,11 +66,11 @@ function runConfiguration(location, annotations, configuration, credentials, sau
         credentials.SAUCE_ACCESS_KEY
     );
 
-    browser.on('status', function(info){
+    browser.on("status", function (info) {
       console.log("WD-STATUS>", info);
     });
 
-    browser.on('command', function(meth, path){
+    browser.on("command", function(meth, path){
       console.log("WD-COMMAND>", meth, path);
     });
 
@@ -96,8 +89,9 @@ function runConfiguration(location, annotations, configuration, credentials, sau
         .then(function () {
             return poll(function () {
                 console.log("POLL");
-                return browser.eval("window.global_test_results")
-            }, 100)
+                /*jshint -W061 */
+                return browser.eval("window.global_test_results");
+            }, 100);
         })
         .timeout(timeout || (20 * 1e3))
         .then(function (_result) {
@@ -120,7 +114,7 @@ function runConfiguration(location, annotations, configuration, credentials, sau
         });
     })
     .finally(function () {
-        return browser.quit()
+        return browser.quit();
     })
     .then(function () {
         return result;
@@ -137,7 +131,7 @@ function poll(callback, ms) {
                 return poll(callback, ms);
             });
         }
-    })
+    });
 }
 
 function main() {
@@ -149,7 +143,7 @@ function main() {
         // reserved for build products.
         return publishBundle(FS.join(process.argv[2]), null, credentials)
         .then(function (location) {
-            return run(location, annotations, process.argv[3])
+            return run(location, annotations, process.argv[3]);
         })
         .then(function (results) {
             return captureSaucelabsMatrix(credentials, annotations)

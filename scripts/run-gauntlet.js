@@ -1,3 +1,4 @@
+"use strict";
 
 var gauntlet = require("./gauntlet");
 var asap = require("../asap");

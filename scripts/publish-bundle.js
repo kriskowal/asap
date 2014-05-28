@@ -1,6 +1,6 @@
+"use strict";
 
 var Q = require("q");
-var FS = require("q-io/fs");
 var URL = require("url");
 var build = require("mr/build");
 var getCredentials = require("./credentials");

@@ -1,7 +1,7 @@
+"use strict";
 
 var Q = require("q");
 var ChildProcess = require("child_process");
-var NodeReader = require("q-io/node/reader");
 var Reader = require("q-io/reader");
 var getCredentials = require("./credentials");
 
@@ -12,7 +12,7 @@ getCredentials()
         var value = credentials[key];
         console.log(key);
         return encrypt(key, value);
-    })
+    });
 })
 .done();
 

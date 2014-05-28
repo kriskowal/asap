@@ -1,3 +1,4 @@
+"use strict";
 
 var FS = require("q-io/fs");
 var ChildProcess = require("child_process");
@@ -38,7 +39,7 @@ function getAnnotations() {
                                 train: "v" + major,
                                 path: "release/" + config.version + "/",
                                 trainPath: "train/release-" + major + "/"
-                            }
+                            };
                         } else {
                             return {
                                 type: "integration",
@@ -47,7 +48,7 @@ function getAnnotations() {
                                 build: hash.slice(0, 7),
                                 path: "integration/" + hash + "/",
                                 trainPath: "train/integration-" + major + "/"
-                            }
+                            };
                         }
                     });
                 });
@@ -63,7 +64,7 @@ function getAnnotations() {
                     trainPath: "train/development/"
                 };
             }
-        })
+        });
     });
 }
 

@@ -1,3 +1,4 @@
+"use strict";
 
 window.global_test_results = {
     webkitmutationobserver: typeof WebKitMutationObserver,

@@ -1,3 +1,4 @@
+"use strict";
 
 var Q = require("q");
 var SauceLabs = require("saucelabs");
@@ -9,7 +10,7 @@ return getCredentials()
         username: credentials.SAUCE_USERNAME,
         password: credentials.SAUCE_ACCESS_KEY
     }));
-    return saucelabs.ninvoke("getWebDriverBrowsers")
+    return saucelabs.ninvoke("getWebDriverBrowsers");
 })
 .then(function (configurations) {
     return configurations.map(function (configuration) {

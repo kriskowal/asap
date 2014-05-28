@@ -1,3 +1,4 @@
+"use strict";
 
 var Q = require("q");
 var getCredentials = require("./credentials");
@@ -16,7 +17,7 @@ return Q([
         build: Math.random().toString(36).slice(2)
     }, process.argv[2] || "scripts/saucelabs-spot-configurations.json")
     .then(function () {
-        return captureSaucelabsMatrix(credentials, annotations, "saucelabs-worker-matrix.svg")
+        return captureSaucelabsMatrix(credentials, annotations, "saucelabs-worker-matrix.svg");
     });
 })
 .done(console.log);
