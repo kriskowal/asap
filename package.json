@@ -21,6 +21,12 @@
     "raw": "./browser-raw.js",
     "test/domain": "./test/browser-domain.js"
   },
+  "files": [
+    "raw.js",
+    "asap.js",
+    "browser-raw.js",
+    "browser-asap.js"
+  ],
   "scripts": {
     "test": "npm run test-node && npm run lint",
     "test-node": "node test/asap-test.js",

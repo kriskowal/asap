@@ -48,6 +48,10 @@ function flush() {
         index = index + 1;
         queue[currentIndex].call();
         // Prevent leaking memory for long chains of recursive calls to `asap`.
+        // If we call `asap` within tasks scheduled by `asap`, the queue will
+        // grow, but to avoid an O(n) walk for every task we execute, we don't
+        // shift tasks off the queue after they have been executed.
+        // Instead, we periodically shift 1024 tasks off the queue.
         if (index > capacity) {
             queue.splice(0, capacity);
             index -= capacity;

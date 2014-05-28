@@ -18,9 +18,8 @@ asap(function () {
 
 [Zalgo]: http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony
 
-This `asap` CommonJS package contains a single `asap` module that
-exports a single `asap` function that executes a function *as soon as
-possible*.
+This CommonJS package provides an `asap` module that exports a function that
+executes a task function *as soon as possible*.
 
 ASAP strives to schedule events to occur before yielding for IO, reflow,
 or redrawing.
@@ -38,21 +37,23 @@ versions of browsers and Node.js.
 
 By design, ASAP prevents input events from being handled until the task
 queue is empty.
-If the process is busy engouh, this may cause incoming connection requests to be
+If the process is busy enough, this may cause incoming connection requests to be
 dropped, and may cause existing connections to inform the sender to reduce the
 transmission rate or stall.
 ASAP allows this on the theory that, if there is enough work to do, there is no
 sense in looking for trouble.
-As a consequence, however, ASAP can interrupt smooth animation, popularly dubbed
-“jank”.
-If your task can wait for reflow or rendering, consider using ASAP’s cousin
-`setImmediate` instead.
-
+As a consequence, ASAP can interfere with smooth animation.
+If your task should be tied to the rendering loop, consider using
+`requestAnimationFrame` instead.
+A long sequence of tasks can also effect the long running script dialog.
+If this is a problem, you may be able to use ASAP’s cousin `setImmediate` to
+break long processes into shorter intervals and periodically allow the browser
+to breathe.
 `setImmediate` will yield for IO, reflow, and repaint events.
-It also returns a handler and can be canceled.  For a `setImmediate` shim,
-consider [setImmediate][].
+It also returns a handler and can be canceled.
+For a `setImmediate` shim, consider [YuzuJS setImmediate][setImmediate].
 
-[setImmediate]: https://github.com/noblejs/setimmediate
+[setImmediate]: https://github.com/YuzuJS/setImmediate
 
 Take care.
 ASAP can sustain infinite recursive calls without warning.
@@ -82,11 +83,11 @@ only after—the error is handled by `domain.on("error")` or
 ## Raw ASAP
 
 Checking for exceptions comes at a cost.
-This package also provides a module, `asap/raw`, exporting a single `rawAsap`
-function.
+The package also provides an `asap/raw` module that exports the underlying
+implementation which is faster but stalls if a task throws an exception.
 This internal version of the ASAP function does not check for errors.
-If a task does throw an error, it will stall the event queue until you manually
-call `rawAsap.requestFlush()`.
+If a task does throw an error, it will stall the event queue unless you manually
+call `rawAsap.requestFlush()` before throwing the error, or any time after.
 
 ## Tasks
 

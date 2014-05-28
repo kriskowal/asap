@@ -51,6 +51,10 @@ function flush() {
         index = index + 1;
         queue[currentIndex].call();
         // Prevent leaking memory for long chains of recursive calls to `asap`.
+        // If we call `asap` within tasks scheduled by `asap`, the queue will
+        // grow, but to avoid an O(n) walk for every task we execute, we don't
+        // shift tasks off the queue after they have been executed.
+        // Instead, we periodically shift 1024 tasks off the queue.
         if (index > capacity) {
             queue.splice(0, capacity);
             index -= capacity;
@@ -170,8 +174,9 @@ function makeRequestFlushFromMutationObserver() {
 // However, if we ever elect to use timers in Safari, the prevalent work-around
 // is to add a scroll event listener that calls for a flush.
 
-// `setTimeout` does not appear to work with a delay less than approximately 7
-// in web workers in Firefox 8 through 18, and sometimes not even then.
+// `setTimeout` does not call the passed callback if the delay is less than
+// approximately 7 in web workers in Firefox 8 through 18, and sometimes not
+// even then.
 
 function makeRequestFlushFromTimer() {
     return function requestFlush() {
