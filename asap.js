@@ -48,7 +48,7 @@ RawTask.prototype.call = function () {
         // Re-throw them to interrupt flushing!
         // Ensure that flushing continues if an uncaught exception is
         // suppressed listening process.on("uncaughtException") or
-        // domain("error").
+        // domain.on("error").
         rawAsap.requestFlush();
         throw error;
     } finally {

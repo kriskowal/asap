@@ -1,8 +1,8 @@
 "use strict";
 
 // Use the fastest means possible to execute a task in its own turn, with
-// priority over other events including network IO events in Node.js and
-// animation, reflow, and redraw events in browsers.
+// priority over other events including IO, animation, reflow, and redraw
+// events in browsers.
 //
 // An exception thrown by a task will permanently interrupt the processing of
 // subsequent tasks. The higher level `asap` function ensures that if an

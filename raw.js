@@ -4,8 +4,7 @@ var domain = require("domain");
 var hasSetImmediate = typeof setImmediate === "function";
 
 // Use the fastest means possible to execute a task in its own turn, with
-// priority over other events including network IO events in Node.js and
-// animation, reflow, and redraw events in browsers.
+// priority over other events including network IO events in Node.js.
 //
 // An exception thrown by a task will permanently interrupt the processing of
 // subsequent tasks. The higher level `asap` function ensures that if an
@@ -23,8 +22,16 @@ function rawAsap(task) {
 }
 
 var queue = [];
+// Once a flush has been requested, no further calls to `requestFlush` are
+// necessary until the next `flush` completes.
 var flushing = false;
+// The position of the next task to execute in the task queue. This is
+// preserved between calls to `flush` so that it can be resumed if
+// a task throws an exception.
 var index = 0;
+// If a task schedules additional tasks recursively, the task queue can grown
+// unbounded. To prevent memory excaustion, the task queue will periodically
+// truncate already-completed tasks.
 var capacity = 1024;
 
 // The flush function processes all tasks that have been scheduled with
