@@ -91,10 +91,14 @@ if (typeof BrowserMutationObserver === "function") {
 // However, they do not work reliably in Internet Explorer or Safari.
 
 // Internet Explorer 10 is the only browser that has setImmediate but does
-// not have MutationObservers. We use `setImmediate` in IE 10 for both
-// windows and workers.
-} else if (typeof setImmediate === "function") {
-    requestFlush = makeRequestFlushFromSetImmediate();
+// not have MutationObservers.
+// Although setImmediate yields to the browser's renderer, it would be
+// preferrable to falling back to setTimeout since it does not have
+// the minimum 4ms penalty.
+// Unfortunately there appears to be a bug in Internet Explorer 10 Mobile (and
+// Desktop to a lesser extent) that renders both setImmediate and
+// MessageChannel useless for the purposes of ASAP.
+// https://github.com/kriskowal/q/issues/396
 
 // Timers are implemented universally.
 // We fall back to timers in workers in most engines, and in foreground
@@ -146,21 +150,25 @@ function makeRequestFlushFromMutationObserver() {
 //     };
 // }
 
-// Internet Explorer 10 does not support `MutationObserver`, but does support
-// `setImmediate`. However, there is a bug in Internet Explorer 10. It is not
-// sufficient to assign `setImmediate` to `requestFlush` because `setImmediate`
-// must be called *by name* and therefore must be wrapped in a closure.
+// For reasons explained above, we are also unable to use `setImmediate`
+// under any circumstances.
+// Even if we were, there is another bug in Internet Explorer 10.
+// It is not sufficient to assign `setImmediate` to `requestFlush` because
+// `setImmediate` must be called *by name* and therefore must be wrapped in a
+// closure.
+// Never forget.
 
-function makeRequestFlushFromSetImmediate() {
-    return function requestFlush() {
-        setImmediate(flush);
-    };
-}
+// function makeRequestFlushFromSetImmediate() {
+//     return function requestFlush() {
+//         setImmediate(flush);
+//     };
+// }
 
 // Safari 6.0 has a problem where timers will get lost while the user is
 // scrolling. This problem does not impact ASAP because Safari 6.0 supports
 // mutation observers, so that implementation is used instead.
-// We elected not to add a "scroll" event listener to force a flush.
+// However, if we ever elect to use timers in Safari, the prevalent work-around
+// is to add a scroll event listener that calls for a flush.
 
 // `setTimeout` does not appear to work with a delay less than approximately 7
 // in web workers in Firefox 8 through 18, and sometimes not even then.
