@@ -1,7 +1,7 @@
 language: node_js
 node_js:
 - '0.10'
-script: npm ls weak-map && npm run test-node && npm run test-saucelabs-all && npm run test-saucelabs-worker-all && npm run lint
+script: npm ls weak-map && npm run test-node && npm run test-saucelabs && npm run test-saucelabs-worker && npm run lint
 env:
   global:
   - secure: iNlwv4tcnCs0oIE6FCNhk4KWenMSxrms7mxBoZ3X7e1PZGMOu5Gate/Qn0AN9cLlkie/hISNQtoRin5LVPH1lxh/mx8Q5bTTWsig1Gy4rKXOUcdaxzHJRM9UODtPK7aYoD2RSNt5688fW0Tfgr2aWC6R6wIA9SUJ8BaP3Z3oveI=
