@@ -16,7 +16,7 @@ function rawAsap(task) {
         requestFlush();
         flushing = true;
     }
-    // Not every browser supports `push` on arrays.
+    // Equivalent to push, but avoids a function call.
     queue[queue.length] = task;
 }
 
@@ -32,8 +32,8 @@ var requestFlush;
 // preserved between calls to `flush` so that it can be resumed if
 // a task throws an exception.
 var index = 0;
-// If a task schedules additional tasks recursively, the task queue can grown
-// unbounded. To prevent memory excaustion, the task queue will periodically
+// If a task schedules additional tasks recursively, the task queue can grow
+// unbounded. To prevent memory exhaustion, the task queue will periodically
 // truncate already-completed tasks.
 var capacity = 1024;
 
@@ -56,8 +56,13 @@ function flush() {
         // shift tasks off the queue after they have been executed.
         // Instead, we periodically shift 1024 tasks off the queue.
         if (index > capacity) {
-            queue.splice(0, capacity);
-            index -= capacity;
+            // Manually shift all values starting at the index back to the
+            // beginning of the queue.
+            for (var scan = 0; scan < index; scan++) {
+                queue[scan] = queue[scan + index];
+            }
+            queue.length -= index;
+            index = 0;
         }
     }
     queue.length = 0;
@@ -89,9 +94,11 @@ var BrowserMutationObserver = global.MutationObserver || global.WebKitMutationOb
 if (typeof BrowserMutationObserver === "function") {
     requestFlush = makeRequestFlushFromMutationObserver();
 
-// MessageChannels are desirable because they also have high priority, and
-// are implemented in Internet Explorer 10, Safari 5.0-1, and Opera 11-12,
-// but also because MutationObservers are not available in web workers.
+// MessageChannels are desirable because they give direct access to the HTML
+// task queue, are implemented in Internet Explorer 10, Safari 5.0-1, and Opera
+// 11-12, and in web workers in many engines.
+// Although message channels yield to any queued rendering and IO tasks, they
+// would be better than imposing the 4ms delay of timers.
 // However, they do not work reliably in Internet Explorer or Safari.
 
 // Internet Explorer 10 is the only browser that has setImmediate but does

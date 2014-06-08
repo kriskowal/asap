@@ -89,6 +89,16 @@ This internal version of the ASAP function does not check for errors.
 If a task does throw an error, it will stall the event queue unless you manually
 call `rawAsap.requestFlush()` before throwing the error, or any time after.
 
+In Node.js, `asap/raw` also runs all tasks outside any domain.
+If you need a task to be bound to your domain, you will have to do it manually.
+
+```js
+if (process.domain) {
+    task = process.domain.bind(task);
+}
+rawAsap(task);
+```
+
 ## Tasks
 
 A task may be any object that implements `call()`.
@@ -96,28 +106,7 @@ A function will suffice, but closures tend not to be reusable and can cause
 garbage collector churn.
 Both `asap` and `rawAsap` accept task objects to give you the option of
 recycling task objects or using higher callable object abstractions.
-
-```js
-function Task() {}
-
-Task.new = function () {
-    if (this.freeTasks.length) {
-        var task = this.freeTasks.pop();
-    } else {
-        var task = Object.create(this.prototype);
-    }
-    task.constructor.apply(task, arguments);
-};
-
-Task.freeTasks = [];
-
-Task.prototype.call = function () {
-    // ...
-    this.constructor.freeTasks.push(this);
-};
-
-asap(new Task());
-```
+See the `asap` source for an illustration.
 
 ## Caveats
 
@@ -127,21 +116,13 @@ event.
 However, once the task queue begins flushing, it will not yield until the queue
 is empty, even if the queue grows while executing tasks.
 
-In Intenet Exporer 10, the first task for a flush will yield to low priority
-tasks like reflow and repaint, both in normal windows and in workers, since ASAP
-must fall back to using `setImmediate`.
+The following browsers allow the use of [DOM mutation observers][] to access
+the HTML [microtask queue][], and thus begin flushing ASAP's task queue
+immediately at the end of the current event loop turn, before any rendering or
+IO:
 
-In the following legacy browsers, the task queue will not begin flushing for
-four miliseconds, since ASAP must fall back to using `setTimeout`.
-
-- Firefox 3–13
-- Internet Explorer 6–9
-- iPad Safari 4.3
-- Lynx 2.8.7
-
-The following browsers are known to use the highest priority event queue at time
-of writing, using DOM mutation observers in window contexts and message channels
-in worker contexts.
+[microtask queue]: http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#microtask-queue
+[DOM mutation observers]: http://dom.spec.whatwg.org/#mutation-observers
 
 - Android 4–4.3
 - Chrome 26–34
@@ -150,6 +131,35 @@ in worker contexts.
 - iPad Safari 6–7.1
 - iPhone Safari 7–7.1
 - Safari 6–7
+
+In the absense of mutation observers, there are a few browsers, and situations
+like web workers in some of the above browsers,  where [message channels][]
+would be a useful way to avoid falling back to timers.
+Message channels give direct access to the HTML [task queue][], so the ASAP
+task queue would flush after any already queued rendering and IO tasks, but
+without having the minimum delay imposed by timers.
+However, among these browsers, Internet Explorer 10 and Safari do not reliably
+dispatch messages, so they are not worth the trouble to implement.
+
+[message channels]: http://www.whatwg.org/specs/web-apps/current-work/multipage/web-messaging.html#message-channels
+[task queue]: http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#concept-task
+
+- Internet Explorer 10
+- Safair 5.0-1
+- Opera 11-12
+
+In the absense of mutation observers, these browsers and the following browsers
+all fall back to using `setTimeout` and `setInterval` to ensure that a `flush`
+occurs.
+The implementation uses both and cancels whatever handler loses the race, since
+`setTimeout` tends to occasionally skip tasks in unisolated circumstances.
+Timers generally delay the flushing of ASAP's task queue for four milliseconds.
+
+- Firefox 3–13
+- Internet Explorer 6–10
+- iPad Safari 4.3
+- Lynx 2.8.7
+
 
 ## Heritage
 

@@ -18,7 +18,8 @@ function rawAsap(task) {
         requestFlush();
         flushing = true;
     }
-    queue.push(task);
+    // Avoids a function call
+    queue[queue.length] = task;
 }
 
 var queue = [];
@@ -53,8 +54,13 @@ function flush() {
         // shift tasks off the queue after they have been executed.
         // Instead, we periodically shift 1024 tasks off the queue.
         if (index > capacity) {
-            queue.splice(0, capacity);
-            index -= capacity;
+            // Manually shift all values starting at the index back to the
+            // beginning of the queue.
+            for (var scan = 0; scan < index; scan++) {
+                queue[scan] = queue[scan + index];
+            }
+            queue.length -= index;
+            index = 0;
         }
     }
     queue.length = 0;
