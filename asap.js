@@ -1,7 +1,6 @@
 "use strict";
 
 var rawAsap = require("./raw");
-var domain = require("domain");
 var freeTasks = [];
 
 /**
@@ -23,7 +22,7 @@ function asap(task) {
         rawTask = new RawTask();
     }
     rawTask.task = task;
-    rawTask.domain = domain.active;
+    rawTask.domain = process.domain;
     rawAsap(rawTask);
 }
 
