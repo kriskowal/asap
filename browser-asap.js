@@ -47,10 +47,15 @@ RawTask.prototype.call = function () {
         } else if (hasSetImmediate) {
             // In WebWorkers on Internet Explorer 10 and 11, the setTimeout
             // function is not FIFO.
-            // Thankfully these browsers have setImmediate, which behaves
-            // correctly.
             // In all other known cases, setTimeout is FIFO, including non
             // Worker contexts in the exact same browsers.
+            // Thankfully these browsers have setImmediate, which executes
+            // tasks in the correct order.
+            // However, setImmediate in the same browsers is known to
+            // occassionally drop events.
+            // Weighing the evil of out of order errors against the evil of not
+            // noticing an error at all, I've elected to use `setImmediate` for
+            // this case.
             // Note that in Internet Explorer 10, setImmediate must be called
             // by name.
             setImmediate(function () {

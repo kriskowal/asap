@@ -1,6 +1,6 @@
 "use strict";
 
-var domain = require("domain");
+var domain; // The domain module is executed on demand
 var hasSetImmediate = typeof setImmediate === "function";
 
 // Use the fastest means possible to execute a task in its own turn, with
@@ -75,6 +75,11 @@ function requestFlush() {
     // To execute code outside of any domain, the following dance is necessary.
     var parentDomain = process.domain;
     if (parentDomain) {
+        if (!domain) {
+            // Lazy execute the domain module.
+            // Only employed if the user elects to use domains.
+            domain = require("domain");
+        }
         domain.active = process.domain = null;
     }
 
