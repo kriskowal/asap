@@ -92,7 +92,7 @@ var BrowserMutationObserver = global.MutationObserver || global.WebKitMutationOb
 // - iPhone Safari 7-7.1
 // - Safari 6-7
 if (typeof BrowserMutationObserver === "function") {
-    requestFlush = makeRequestFlushFromMutationObserver();
+    requestFlush = makeRequestCallFromMutationObserver(flush);
 
 // MessageChannels are desirable because they give direct access to the HTML
 // task queue, are implemented in Internet Explorer 10, Safari 5.0-1, and Opera
@@ -122,7 +122,7 @@ if (typeof BrowserMutationObserver === "function") {
 // - iPad Safari 4.3
 // - Lynx 2.8.7
 } else {
-    requestFlush = makeRequestFlushFromTimer();
+    requestFlush = makeRequestCallFromTimer(flush);
 }
 
 // `requestFlush` requests that the high priority event queue be flushed as
@@ -134,12 +134,12 @@ rawAsap.requestFlush = requestFlush;
 
 // To request a high priority event, we induce a mutation observer by toggling
 // the text of a text node between "1" and "-1".
-function makeRequestFlushFromMutationObserver() {
+function makeRequestCallFromMutationObserver(callback) {
     var toggle = 1;
-    var observer = new BrowserMutationObserver(flush);
+    var observer = new BrowserMutationObserver(callback);
     var node = document.createTextNode("");
     observer.observe(node, {characterData: true});
-    return function requestFlush() {
+    return function requestCall() {
         toggle = -toggle;
         node.data = toggle;
     };
@@ -153,10 +153,10 @@ function makeRequestFlushFromMutationObserver() {
 // page's first load. Thankfully, this version of Safari supports
 // MutationObservers, so we don't need to fall back in that case.
 
-// function makeRequestFlushFromMessageChannel() {
+// function makeRequestCallFromMessageChannel(callback) {
 //     var channel = new MessageChannel();
-//     channel.port1.onmessage = flush;
-//     return function requestFlush() {
+//     channel.port1.onmessage = callback;
+//     return function requestCall() {
 //         channel.port2.postMessage(0);
 //     };
 // }
@@ -169,9 +169,9 @@ function makeRequestFlushFromMutationObserver() {
 // closure.
 // Never forget.
 
-// function makeRequestFlushFromSetImmediate() {
-//     return function requestFlush() {
-//         setImmediate(flush);
+// function makeRequestCallFromSetImmediate(callback) {
+//     return function requestCall() {
+//         setImmediate(callback);
 //     };
 // }
 
@@ -185,26 +185,32 @@ function makeRequestFlushFromMutationObserver() {
 // approximately 7 in web workers in Firefox 8 through 18, and sometimes not
 // even then.
 
-function makeRequestFlushFromTimer() {
-    return function requestFlush() {
+function makeRequestCallFromTimer(callback) {
+    return function requestCall() {
         // We dispatch a timeout with a specified delay of 0 for engines that
         // can reliably accommodate that request. This will usually be snapped
         // to a 4 milisecond delay, but once we're flushing, there's no delay
         // between events.
-        var timeoutHandle = setTimeout(handleFlushTimer, 0);
+        var timeoutHandle = setTimeout(handleTimer, 0);
         // However, since this timer gets frequently dropped in Firefox
         // workers, we enlist an interval handle that will try to fire
         // an event 20 times per second until it succeeds.
-        var intervalHandle = setInterval(handleFlushTimer, 50);
-        function handleFlushTimer() {
-            // Whichever timer succeeds will cancel both timers and request the
-            // flush.
+        var intervalHandle = setInterval(handleTimer, 50);
+        
+        function handleTimer() {
+            // Whichever timer succeeds will cancel both timers and
+            // execute the callback.
             clearTimeout(timeoutHandle);
             clearInterval(intervalHandle);
-            flush();
+            callback();
         }
     };
 }
+
+// This is for `asap.js` only.
+// Its name will be periodically randomized to break any code that
+// depends on its existence.
+rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 
 // ASAP was originally a nextTick shim included in Q. This was factored out
 // into this ASAP package. It was later adapted to RSVP which made further
@@ -212,4 +218,3 @@ function makeRequestFlushFromTimer() {
 // to capture the MutationObserver implementation in a closure, were integrated
 // back into ASAP proper.
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
-
