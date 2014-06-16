@@ -196,7 +196,7 @@ function makeRequestCallFromTimer(callback) {
         // workers, we enlist an interval handle that will try to fire
         // an event 20 times per second until it succeeds.
         var intervalHandle = setInterval(handleTimer, 50);
-        
+
         function handleTimer() {
             // Whichever timer succeeds will cancel both timers and
             // execute the callback.
@@ -208,8 +208,8 @@ function makeRequestCallFromTimer(callback) {
 }
 
 // This is for `asap.js` only.
-// Its name will be periodically randomized to break any code that
-// depends on its existence.
+// Its name will be periodically randomized to break any code that depends on
+// its existence.
 rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 
 // ASAP was originally a nextTick shim included in Q. This was factored out
@@ -218,3 +218,4 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 // to capture the MutationObserver implementation in a closure, were integrated
 // back into ASAP proper.
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
+
