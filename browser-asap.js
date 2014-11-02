@@ -4,8 +4,16 @@
 var rawAsap = require("./raw");
 // RawTasks are recycled to reduce GC churn.
 var freeTasks = [];
-// You're not going to believe this.
-var hasSetImmediate = typeof setImmediate === "function";
+// We queue errors to ensure they are thrown in right order (FIFO).
+// Array-as-queue is good enough here, since we are just dealing with exceptions.
+var pendingErrors = [];
+var requestErrorThrow = rawAsap.makeRequestCallFromTimer(throwFirstError);
+
+function throwFirstError() {
+    if (pendingErrors.length) {
+        throw pendingErrors.shift();
+    }
+}
 
 /**
  * Calls a task as soon as possible after returning, in its own event, with priority
@@ -44,34 +52,15 @@ RawTask.prototype.call = function () {
             // Its name will be periodically randomized to break any code that
             // depends on its existence.
             asap.onerror(error);
-        } else if (hasSetImmediate) {
-            // In WebWorkers on Internet Explorer 10 and 11, the setTimeout
-            // function is not FIFO.
-            // In all other known cases, setTimeout is FIFO, including non
-            // Worker contexts in the exact same browsers.
-            // Thankfully these browsers have setImmediate, which executes
-            // tasks in the correct order.
-            // However, setImmediate in the same browsers is known to
-            // occassionally drop events.
-            // Weighing the evil of out of order errors against the evil of not
-            // noticing an error at all, I've elected to use `setImmediate` for
-            // this case.
-            // Note that in Internet Explorer 10, setImmediate must be called
-            // by name.
-            setImmediate(function () {
-                throw error;
-            });
         } else {
             // In a web browser, exceptions are not fatal. However, to avoid
             // slowing down the queue of pending tasks, we rethrow the error in a
             // lower priority turn.
-            setTimeout(function () {
-                throw error;
-            }, 0);
+            pendingErrors.push(error);
+            requestErrorThrow();
         }
     } finally {
         this.task = null;
         freeTasks[freeTasks.length] = this;
     }
 };
-
