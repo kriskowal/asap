@@ -108,6 +108,25 @@ Both `asap` and `rawAsap` accept task objects to give you the option of
 recycling task objects or using higher callable object abstractions.
 See the `asap` source for an illustration.
 
+
+## Compatibility
+
+ASAP is tested on Node.js v0.10 and in a broad spectrum of web browsers.
+The following charts capture the browser test results for the most recent
+release.
+The first chart shows test results for ASAP running in the main window context.
+The second chart shows test results for ASAP running in a web worker context.
+Test results are inconclusive (grey) on browsers that do not support web
+workers.
+These data are captured automatically by [Continuous
+Integration][].
+
+[Continuous Integration]: https://github.com/kriskowal/asap/blob/master/CONTRIBUTING.md
+
+![Browser Compatibility](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-matrix.svg)
+
+![Compatibility in Web Workers](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-worker-matrix.svg)
+
 ## Caveats
 
 When a task is added to an empty event queue, it is not always possible to
