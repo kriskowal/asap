@@ -36,9 +36,11 @@ function run() {
             passed: !failed
         };
         if (global.postMessage) {
-            global.postMessage({
-                passed: !failed
-            }, "*");
+            if (typeof window !== "undefined") {
+                global.postMessage(failed ? "failed" : "passed", "*");
+            } else {
+                global.postMessage(failed ? "failed" : "passed");
+            }
         }
         if (typeof process !== "undefined") {
             process.exit(failed ? -1 : 0);
