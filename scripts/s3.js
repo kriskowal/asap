@@ -8,13 +8,16 @@ function S3(config) {
     this.knox = knox.createClient(config);
 }
 
-S3.prototype.put = function (path, content, contentType) {
+S3.prototype.put = function (path, content, contentType, moreHeaders) {
     var deferred = Q.defer();
     var headers = {
         "Content-Length": content.length,
         "Content-type": contentType,
         "x-amz-acl": "public-read"
     };
+    for (var name in moreHeaders) {
+        headers[name] = moreHeaders[name];
+    }
     var request = this.knox.put(path, headers);
     request.on("response", function (response) {
         if (response.statusCode === 200) {

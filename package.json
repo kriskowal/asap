@@ -28,7 +28,7 @@
     "browser-asap.js"
   ],
   "scripts": {
-    "test": "npm run test-node && npm run lint",
+    "test": "npm run lint && npm run test-node ",
     "test-node": "node test/asap-test.js",
     "test-publish": "node scripts/publish-bundle.js test/asap-test.js | pbcopy",
     "test-browser": "node scripts/publish-bundle.js test/asap-test.js | xargs opener",
@@ -36,7 +36,7 @@
     "test-saucelabs-all": "node scripts/saucelabs.js test/asap-test.js scripts/saucelabs-all-configurations.json",
     "test-saucelabs-worker": "node scripts/saucelabs-worker-test.js scripts/saucelabs-spot-configurations.json",
     "test-saucelabs-worker-all": "node scripts/saucelabs-worker-test.js scripts/saucelabs-all-configurations.json",
-    "lint": "jshint raw.js asap.js browser-raw.js browser-asap.js scripts"
+    "lint": "jshint raw.js asap.js browser-raw.js browser-asap.js $(find scripts -name '*.js' | grep -v gauntlet)"
   },
   "devDependencies": {
     "events": "^1.0.1",

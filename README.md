@@ -123,9 +123,9 @@ Integration][].
 
 [Continuous Integration]: https://github.com/kriskowal/asap/blob/master/CONTRIBUTING.md
 
-![Browser Compatibility](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-matrix.svg)
+![Browser Compatibility](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-results-matrix.svg)
 
-![Compatibility in Web Workers](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-worker-matrix.svg)
+![Compatibility in Web Workers](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-worker-results-matrix.svg)
 
 ## Caveats
 

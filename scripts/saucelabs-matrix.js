@@ -13,8 +13,10 @@ function captureMatrix(credentials, annotations, name) {
     });
     return HTTP.read("https://saucelabs.com/browser-matrix/" + credentials.SAUCE_USERNAME + ".svg")
     .then(function (content) {
-        var path = URL.resolve(annotations.trainPath, name || "saucelabs-matrix.svg");
-        return s3.put(path, content, "image/svg+xml")
+        var path = URL.resolve(annotations.trainPath, name || "saucelabs-results-matrix.svg");
+        return s3.put(path, content, "image/svg+xml", {
+            "Cache-Control": "no-cache"
+        })
         .thenResolve(URL.resolve(credentials.S3_WEBSITE, path));
     });
 }

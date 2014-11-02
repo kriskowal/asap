@@ -1,3 +1,4 @@
+"use strict";
 
 var configurations = require("./saucelabs-all-configurations.json");
 
@@ -47,4 +48,3 @@ console.log(JSON.stringify({
     platforms: platforms,
     browsers: browsers
 }, null, 4));
-
