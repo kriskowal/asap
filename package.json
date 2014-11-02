@@ -28,7 +28,8 @@
     "browser-asap.js"
   ],
   "scripts": {
-    "test": "npm run lint && npm run test-node ",
+    "test": "npm run lint && npm run test-node",
+    "test-travis": "npm run lint && npm run test-node && npm run test-saucelabs && npm run test-saucelabs-worker",
     "test-node": "node test/asap-test.js",
     "test-publish": "node scripts/publish-bundle.js test/asap-test.js | pbcopy",
     "test-browser": "node scripts/publish-bundle.js test/asap-test.js | xargs opener",

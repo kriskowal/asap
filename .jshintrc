@@ -18,6 +18,8 @@
     "globals": {
         "setImmediate": false,
         "performance": false,
+        "Map": true,
+        "Set": true,
         "URL": true
     }
 }
