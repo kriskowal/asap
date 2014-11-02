@@ -1,1 +1,4 @@
-credentials.json
+/credentials.json
+/test
+/scripts
+.idea
