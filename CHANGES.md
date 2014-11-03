@@ -32,9 +32,9 @@ nuances, ensuring that the next generation of implementations know what details
 are essential.
 
 -   [asap.js](https://github.com/kriskowal/asap/blob/master/asap.js)
--   [raw](https://github.com/kriskowal/asap/blob/master/raw.js)
+-   [raw.js](https://github.com/kriskowal/asap/blob/master/raw.js)
 -   [browser-asap.js](https://github.com/kriskowal/asap/blob/master/browser-asap.js)
--   [browser-raw](https://github.com/kriskowal/asap/blob/master/browser-raw.js)
+-   [browser-raw.js](https://github.com/kriskowal/asap/blob/master/browser-raw.js)
 
 The new version has also been rigorously tested across a broad spectrum of
 browsers, in both the window and worker context.
@@ -50,4 +50,6 @@ Integration][].
 ![Browser Compatibility](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-results-matrix.svg)
 
 ![Compatibility in Web Workers](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-worker-results-matrix.svg)
+
+[Continuous Integration]: https://github.com/kriskowal/asap/blob/master/CONTRIBUTING.md
 
