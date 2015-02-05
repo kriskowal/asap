@@ -1,4 +1,9 @@
 
+## 2.0.1
+
+Version 2.0.1 fixes a bug in the way redirects were expressed that affected the
+function of Browserify, but which Mr would tolerate.
+
 ## 2.0.0
 
 Version 2 of ASAP is a full rewrite with a few salient changes.
