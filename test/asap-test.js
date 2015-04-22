@@ -96,19 +96,46 @@ function describeAsap(name, asap) {
         }, WAIT_FOR_NORMAL_CASE);
     });
 
-    it(name + " can schedule thousands of tasks", function(done) {
-        var target = 2060;
-        var counter = 0;
-        function inc() {
-            counter++;
+    it(name + " can schedule more than capacity tasks", function(done) {
+        var target = 1060;
+        var targetList = [];
+        for (var i=0; i<target; i++) {
+            targetList.push(i);
         }
 
+        var newList = [];
         for (var i=0; i<target; i++) {
-            asap(inc);
+            (function(i) {
+                asap(function() {
+                    newList.push(i);
+                });
+            })(i);
         }
 
         setTimeout(function () {
-            expect(counter).toEqual(target);
+            expect(newList).toEqual(targetList);
+            done();
+        }, WAIT_FOR_NORMAL_CASE);
+    });
+
+    it(name + " can schedule more than capacity*2 tasks", function(done) {
+        var target = 2060;
+        var targetList = [];
+        for (var i=0; i<target; i++) {
+            targetList.push(i);
+        }
+
+        var newList = [];
+        for (var i=0; i<target; i++) {
+            (function(i) {
+                asap(function() {
+                    newList.push(i);
+                });
+            })(i);
+        }
+
+        setTimeout(function () {
+            expect(newList).toEqual(targetList);
             done();
         }, WAIT_FOR_NORMAL_CASE);
     });
