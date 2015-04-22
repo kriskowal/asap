@@ -96,6 +96,23 @@ function describeAsap(name, asap) {
         }, WAIT_FOR_NORMAL_CASE);
     });
 
+    it(name + " can schedule thousands of tasks", function(done) {
+        var target = 2060;
+        var counter = 0;
+        function inc() {
+            counter++;
+        }
+
+        for (var i=0; i<target; i++) {
+            asap(inc);
+        }
+
+        setTimeout(function () {
+            expect(counter).toEqual(target);
+            done();
+        }, WAIT_FOR_NORMAL_CASE);
+    });
+
     // Recursion
 
     it(name + " can schedule tasks recursively", function (done) {
@@ -416,4 +433,3 @@ it("does not confuse domains when a task throws an error", function (done) {
     // TODO
     done();
 });
-
