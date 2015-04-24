@@ -58,7 +58,7 @@ function flush() {
         if (index > capacity) {
             // Manually shift all values starting at the index back to the
             // beginning of the queue.
-            for (var scan = 0, len = queue.length; scan < len - index; scan++) {
+            for (var scan = 0, newLength = queue.length - index; scan < newLength; scan++) {
                 queue[scan] = queue[scan + index];
             }
             queue.length -= index;
