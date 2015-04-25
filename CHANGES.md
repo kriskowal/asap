@@ -1,5 +1,9 @@
 
-## 2.0.1
+## 2.0.3
+
+Version 2.0.3 fixes a bug when adjusting the capacity of the task queue.
+
+## 2.0.1-2.02
 
 Version 2.0.1 fixes a bug in the way redirects were expressed that affected the
 function of Browserify, but which Mr would tolerate.
