@@ -6,7 +6,7 @@ var suite = new Benchmark.Suite({
     }
 });
 
-function add_timer(s, f) {
+function addTimer(s, f) {
     suite.add(s, function (deferred) {
         f(function () {
             deferred.resolve();
@@ -21,7 +21,7 @@ function time(s, f) {
     // have any errors before benchmarking it
     f(function () {});
 
-    add_timer(s, f);
+    addTimer(s, f);
 }
 
 function run() {
