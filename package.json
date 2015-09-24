@@ -17,7 +17,9 @@
   },
   "main": "./asap.js",
   "browser": {
+    "./asap": "./browser-asap.js",
     "./asap.js": "./browser-asap.js",
+    "./raw": "./browser-raw.js",
     "./raw.js": "./browser-raw.js",
     "./test/domain.js": "./test/browser-domain.js"
   },
