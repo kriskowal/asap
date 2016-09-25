@@ -1,6 +1,6 @@
 {
   "name": "asap",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "High-priority task queue for Node.js and browsers",
   "keywords": [
     "event",
