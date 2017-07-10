@@ -20,6 +20,9 @@
     "./raw.js": "./browser-raw.js",
     "./test/domain.js": "./test/browser-domain.js"
   },
+  "react-native": {
+    "domain": false
+  },
   "files": [
     "raw.js",
     "asap.js",
