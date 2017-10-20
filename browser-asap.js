@@ -1,7 +1,7 @@
 "use strict";
 
 // rawAsap provides everything we need except exception management.
-var rawAsap = require("./raw");
+var rawAsap = require("./browser-raw");
 // RawTasks are recycled to reduce GC churn.
 var freeTasks = [];
 // We queue errors to ensure they are thrown in right order (FIFO).
