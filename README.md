@@ -151,7 +151,7 @@ IO:
 - iPhone Safari 7–7.1
 - Safari 6–7
 
-In the absense of mutation observers, there are a few browsers, and situations
+In the absence of mutation observers, there are a few browsers, and situations
 like web workers in some of the above browsers,  where [message channels][]
 would be a useful way to avoid falling back to timers.
 Message channels give direct access to the HTML [task queue][], so the ASAP
@@ -167,7 +167,7 @@ dispatch messages, so they are not worth the trouble to implement.
 - Safair 5.0-1
 - Opera 11-12
 
-In the absense of mutation observers, these browsers and the following browsers
+In the absence of mutation observers, these browsers and the following browsers
 all fall back to using `setTimeout` and `setInterval` to ensure that a `flush`
 occurs.
 The implementation uses both and cancels whatever handler loses the race, since
