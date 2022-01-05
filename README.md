@@ -164,7 +164,7 @@ dispatch messages, so they are not worth the trouble to implement.
 [task queue]: http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#concept-task
 
 - Internet Explorer 10
-- Safair 5.0-1
+- Safari 5.0-1
 - Opera 11-12
 
 In the absence of mutation observers, these browsers and the following browsers
