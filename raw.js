@@ -14,13 +14,17 @@ var hasSetImmediate = typeof setImmediate === "function";
 // call `rawAsap.requestFlush` if an exception is thrown.
 module.exports = rawAsap;
 function rawAsap(task) {
-    if (!queue.length) {
+    if (!flushing) {
         requestFlush();
         flushing = true;
     }
     // Avoids a function call
     queue[queue.length] = task;
 }
+module.exports.markFlushing = function () {
+  flushing = true;
+};
+module.exports.flush = flush;
 
 var queue = [];
 // Once a flush has been requested, no further calls to `requestFlush` are
